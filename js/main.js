@@ -478,22 +478,32 @@
   }
 
   function buildWhatsAppMessage(data) {
+    var raw = data || {};
+    var name = (raw["Customer Name"] || raw.name || "-");
+    var phone = (raw["Phone Number"] || raw.phone || "-");
+    var email = (raw["Email Address"] || raw.email || "-");
+    var category = (raw["Yarn Category"] || raw.category || "-");
+    var message = (raw["Requirement Details"] || raw.message || "-");
+
+    var timestamp = new Date().toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      dateStyle: "medium",
+      timeStyle: "short"
+    });
+
     var lines = [
-      "*New Enquiry — Shivam Enterprise*",
-      "━━━━━━━━━━━━━━━━━━━━━━",
-      "👤 *Inquirer:* " + (data.name || "-"),
-      "📞 *Phone:* " + (data.phone || "-"),
-      "✉️ *Email:* " + (data.email || "-"),
-      "🧵 *Category:* " + (data.category || "-"),
-      "━━━━━━━━━━━━━━━━━━━━━━",
+      "*🧵 New Yarn Enquiry — Shivam Enterprise*",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "👤 *Customer:* " + name,
+      "📞 *Phone:* " + phone,
+      "✉️ *Email:* " + email,
+      "🧶 *Category:* " + category,
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
       "📝 *Requirement:*",
-      (data.message || "-"),
-      "━━━━━━━━━━━━━━━━━━━━━━",
-      "🕒 *Submitted:* " + new Date().toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata",
-        dateStyle: "medium",
-        timeStyle: "short"
-      })
+      message,
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "🕒 *Submitted:* " + timestamp + " IST",
+      "🌐 *Source:* Shivam Enterprise Website"
     ];
     return lines.join("\n");
   }
@@ -552,9 +562,27 @@
       var category = (rawData.category || "").trim();
       var message = (rawData.message || "").trim();
 
-      // Dynamic Subject Line: e.g. "New Enquiry: [TPM Yarn] — Rajesh Patel"
-      var dynamicSubject = "New Enquiry: [" + (category || "General") + "] — " + (name || "Website Inquirer");
-      var dynamicFrom = name ? (name + " (via Shivam Enterprise)") : "Shivam Enterprise Website";
+      // WhatsApp direct link for one-tap action
+      var digitsOnly = (phone.match(/\d/g) || []).join("");
+      var intlNumber = digitsOnly.length === 10 ? ("91" + digitsOnly) : digitsOnly;
+      var waDirectChat = digitsOnly.length >= 7 ? ("https://wa.me/" + intlNumber) : "N/A";
+
+      // Precise IST timestamp
+      var submissionTime = new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        weekday: "short",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      }) + " IST";
+
+      // Dynamic Subject Line: Eye-catching and immediately actionable
+      var phoneSnippet = phone ? (" (" + phone + ")") : "";
+      var dynamicSubject = "🧵 [Shivam Enterprise] New Enquiry: " + (category || "Yarn") + " — " + (name || "Website Visitor") + phoneSnippet;
+      var dynamicFrom = name ? (name + " (Shivam Enterprise Enquiry)") : "Shivam Enterprise Website";
 
       // Populate hidden form inputs
       var keyInput = $("#w3f-access-key");
@@ -572,24 +600,22 @@
       submit.setAttribute("aria-disabled", "true");
       submitText.textContent = "Sending…";
 
-      var payload = Object.assign({}, rawData, {
+      // Clean, beautifully structured email payload without messy technical keys
+      var payload = {
         access_key: cfg.key,
         subject: dynamicSubject,
         from_name: dynamicFrom,
         replyto: email || undefined,
-        "Submitted At (IST)": new Date().toLocaleString("en-IN", {
-          timeZone: "Asia/Kolkata",
-          dateStyle: "full",
-          timeStyle: "medium"
-        })
-      });
 
-      // Quick WhatsApp direct link in email table if valid phone
-      var digitsOnly = (phone.match(/\d/g) || []).join("");
-      if (digitsOnly.length >= 10) {
-        var intlNumber = digitsOnly.length === 10 ? ("91" + digitsOnly) : digitsOnly;
-        payload["Quick WhatsApp Link"] = "https://wa.me/" + intlNumber;
-      }
+        // High-level customer and order table
+        "Customer Name": name,
+        "Contact Number": phone,
+        "Email Address": email || "Not provided",
+        "Yarn Category": category || "General Enquiry",
+        "Requirement Details": message,
+        "Direct WhatsApp Chat": waDirectChat,
+        "Submission Time": submissionTime
+      };
 
       fetch("https://api.web3forms.com/submit", {
         method: "POST",
