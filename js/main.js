@@ -670,6 +670,7 @@
       ".card",
       ".service",
       ".location__panel",
+      ".map-container",
       ".map",
       ".contact-item",
       ".form"

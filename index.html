@@ -379,10 +379,13 @@
        (SITE.contact.address, SITE.mapEmbed, SITE.areas). Nothing here needs
        editing - change those values in js/data.js instead.
        ==================================================================== -->
-  <section class="section section--lav" id="location" data-nav="location" aria-labelledby="location-title">
+  <section class="section section--location" id="location" data-nav="location" aria-labelledby="location-title">
     <div class="container">
       <div class="section-head">
-        <span class="eyebrow">Find Us</span>
+        <span class="eyebrow eyebrow--badge">
+          <svg class="icon icon--pin" width="15" height="15" aria-hidden="true"><use href="#i-pin"></use></svg>
+          Find Us
+        </span>
         <h2 id="location-title">Where we are</h2>
         <p class="lead" style="margin-top:1rem">
           We are at 1075-1076, Diamond Eco-3, Gabeni Gam, Sachin, Surat. Call
@@ -392,16 +395,31 @@
 
       <div class="location__grid">
 
-        <div class="location__panel">
+        <div class="location__panel reveal">
           <div class="contact-list" style="margin-top:0" id="location-contact"><!-- filled by js/main.js --></div>
 
-          <div style="margin-top:1.75rem">
-            <p class="areas__title">Areas We Supply</p>
+          <div class="areas__box">
+            <p class="areas__title">
+              <svg class="icon" width="16" height="16" aria-hidden="true"><use href="#i-truck"></use></svg>
+              <span>Areas We Supply</span>
+            </p>
             <ul class="areas__list" id="areas-list"><!-- filled by js/main.js --></ul>
           </div>
         </div>
 
-        <div class="map" id="map"><!-- filled by js/main.js --></div>
+        <div class="map-container reveal">
+          <div class="map" id="map"><!-- filled by js/main.js --></div>
+          <div class="map__overlay">
+            <div class="map__chip">
+              <span class="map__chip-dot" aria-hidden="true"></span>
+              <span class="map__chip-text">Diamond Eco-3, Sachin, Surat</span>
+            </div>
+            <a class="map__directions-btn" href="https://www.google.com/maps/dir/?api=1&destination=1075-1076,+Diamond+Eco-3,+Gabeni+Gam,+Sachin,+Surat,+Gujarat" target="_blank" rel="noopener">
+              <span>Get Directions</span>
+              <svg class="icon icon--sm" width="13" height="13" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+            </a>
+          </div>
+        </div>
 
       </div>
     </div>

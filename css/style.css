@@ -692,57 +692,336 @@ h3 { font-size: var(--fs-h3); font-weight: 600; }
 /* --------------------------------------------------------------------------
    11. LOCATION / AREAS WE SERVE
    -------------------------------------------------------------------------- */
+
+/* Section background -------------------------------------------------------- */
+.section--location {
+  position: relative;
+  isolation: isolate;
+  background-color: #8d99ae;
+  background-image:
+    radial-gradient(ellipse 65% 55% at 15% 20%, rgba(255,255,255,0.45) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 55% at 85% 80%, rgba(43,45,66,0.16) 0%, transparent 70%),
+    linear-gradient(135deg, #a2afc1 0%, #8d99ae 45%, #7a889c 100%);
+  overflow: hidden;
+}
+
+.section--location h2 {
+  color: var(--indigo);
+  font-size: clamp(2.15rem, 4vw, 2.85rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.section--location .lead {
+  color: #1a1c2b;
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.6;
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+/* Eyebrow badge pill -------------------------------------------------------- */
+.eyebrow--badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 1.15rem;
+  background: rgba(255, 255, 255, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--indigo);
+  box-shadow: 0 4px 14px rgba(43, 45, 66, 0.08);
+}
+
+/* Grid ---------------------------------------------------------------------- */
 .location__grid {
   display: grid;
   gap: clamp(1.5rem, 3vw, 2.5rem);
-  align-items: start;
+  align-items: stretch;
 }
 
+/* Left info panel ----------------------------------------------------------- */
 .location__panel {
-  padding: clamp(1.25rem, 3vw, 1.75rem);
-  background-color: var(--plat-600);
-  border: 1px solid var(--lav-700);
-  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.5rem, 3.5vw, 2.25rem);
+  background: rgba(255, 255, 255, 0.94);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  backdrop-filter: blur(20px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  box-shadow:
+    0 24px 50px -12px rgba(17, 18, 26, 0.16),
+    0 0 0 1px rgba(17, 18, 26, 0.04);
+  transition: box-shadow var(--transition);
+}
+
+/* Contact items inside location panel --------------------------------------- */
+#location .contact-list {
+  display: grid;
+  gap: 0.95rem;
+  margin-top: 0;
+}
+
+#location .contact-item {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  padding: 1rem 1.25rem;
+  background-color: #ffffff;
+  border: 1px solid rgba(43, 45, 66, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(43, 45, 66, 0.03);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+}
+
+#location .contact-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(43, 45, 66, 0.22);
+  box-shadow: 0 10px 24px -4px rgba(43, 45, 66, 0.10);
+}
+
+#location .contact-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.85rem;
+  height: 2.85rem;
+  flex: none;
+  background: rgba(43, 45, 66, 0.05);
+  border: 1px solid rgba(43, 45, 66, 0.08);
+  border-radius: 13px;
+  color: var(--indigo);
+  transition: all 0.25s ease;
+}
+
+#location .contact-item:hover .contact-item__icon {
+  background-color: var(--indigo);
+  color: #ffffff;
+  border-color: var(--indigo);
+}
+
+#location .contact-item__label {
+  display: block;
+  font-size: 0.725rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lav-400);
+  margin-bottom: 0.2rem;
+}
+
+#location .contact-item__value {
+  display: block;
+  font-size: 0.985rem;
+  font-weight: 600;
+  color: var(--indigo);
+  text-decoration: none;
+  line-height: 1.4;
+}
+
+#location a.contact-item__value:hover {
+  color: var(--indigo-300);
+  text-decoration: none;
+}
+
+#location .contact-item__value--plain {
+  color: var(--text-heading);
+  font-weight: 500;
+  font-size: 0.925rem;
+}
+
+/* Areas box ----------------------------------------------------------------- */
+.areas__box {
+  margin-top: 1.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(43, 45, 66, 0.08);
+}
+
+.areas__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--indigo);
+}
+
+.areas__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.areas__list li {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.95rem;
+  background-color: #ffffff;
+  border: 1px solid rgba(43, 45, 66, 0.12);
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--indigo);
+  box-shadow: 0 1px 4px rgba(43, 45, 66, 0.04);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: default;
+}
+
+.areas__list li::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--indigo);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.areas__list li:hover {
+  background-color: var(--indigo);
+  color: #ffffff;
+  border-color: var(--indigo);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px -2px rgba(43, 45, 66, 0.22);
+}
+
+.areas__list li:hover::before {
+  background-color: #25d366;
+  opacity: 1;
+}
+
+/* Map container ------------------------------------------------------------- */
+.map-container {
+  position: relative;
+  height: 100%;
+  min-height: 480px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow:
+    0 24px 50px -12px rgba(17, 18, 26, 0.16),
+    0 0 0 1px rgba(17, 18, 26, 0.04);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow var(--transition);
 }
 
 .map {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
   overflow: hidden;
-  aspect-ratio: 4 / 3;
   background-color: var(--plat-700);
-  border: 1px solid var(--lav-700);
-  border-radius: var(--radius);
+  border-radius: 0;
 }
+
 .map iframe {
   display: block;
   width: 100%;
   height: 100%;
+  min-height: 100%;
   border: 0;
-  /* Keeps the map from injecting off-palette UI colours. The map is content,
-     not chrome, so full colour is allowed - this is a light touch only. */
-  filter: saturate(0.25);
+  filter: saturate(0.92) contrast(1.02);
+  transition: filter 0.3s ease;
 }
 
-.areas__title {
-  margin-bottom: 0.85rem;
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-body);
+.map-container:hover .map iframe {
+  filter: saturate(1.05) contrast(1.02);
 }
-.areas__list {
+
+/* Floating overlay inside map card ------------------------------------------ */
+.map__overlay {
+  position: absolute;
+  bottom: 1.15rem;
+  left: 1.15rem;
+  right: 1.15rem;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  padding: 0.75rem 1.15rem;
+  background: rgba(255, 255, 255, 0.94);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -4px rgba(17, 18, 26, 0.14);
+  z-index: 2;
 }
-.areas__list li {
-  padding: 0.35rem 0.85rem;
-  background-color: var(--platinum);
-  border: 1px solid var(--lav-400);
-  border-radius: var(--radius-pill);
-  font-size: var(--fs-small);
+
+.map__chip {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.map__chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #25d366;
+  box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.25);
+  animation: pulse-dot 2.2s infinite ease-in-out;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.25); opacity: 0.8; }
+}
+
+.map__chip-text {
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--indigo);
+}
+
+.map__directions-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 1.05rem;
+  background-color: var(--indigo);
+  color: #ffffff;
+  border-radius: var(--radius-pill);
+  font-size: 0.825rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(43, 45, 66, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.map__directions-btn:hover {
+  background-color: var(--indigo-300);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(43, 45, 66, 0.3);
+  color: #ffffff;
+}
+
+.map__directions-btn .icon {
+  transition: transform 0.2s ease;
+}
+
+.map__directions-btn:hover .icon {
+  transform: translateX(2px);
 }
 
 /* --------------------------------------------------------------------------
@@ -1184,6 +1463,47 @@ select.field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
+/* ---- 3a-bis. PHONE ONLY: the cotton flower photograph, full composition ---
+   Below 900px the three columns stack, so the card becomes a tall column.
+   The desktop artwork is 1.78 landscape; `cover` on a portrait card gives a
+   narrow smeared slice. Use the portrait source (941x1672) at full width
+   with a lighter veil so the composition actually reads. */
+@media (max-width: 899px) {
+  .site-footer {
+    background-image: none;
+    background-color: var(--platinum);
+  }
+
+  .footer__glass {
+    background-color: rgba(237, 242, 244, 0.85);
+    background-image:
+      linear-gradient(
+        180deg,
+        rgba(237, 242, 244, 0.35) 0%,
+        rgba(237, 242, 244, 0.45) 25%,
+        rgba(237, 242, 244, 0.60) 55%,
+        rgba(237, 242, 244, 0.78) 85%,
+        rgba(237, 242, 244, 0.88) 100%
+      ),
+      url("../images/footer-card-mobile-source.png");
+    background-image:
+      linear-gradient(
+        180deg,
+        rgba(237, 242, 244, 0.35) 0%,
+        rgba(237, 242, 244, 0.45) 25%,
+        rgba(237, 242, 244, 0.60) 55%,
+        rgba(237, 242, 244, 0.78) 85%,
+        rgba(237, 242, 244, 0.88) 100%
+      ),
+      url("../images/footer-card-mobile.webp");
+    background-size: cover;
+    background-position: center 25%;
+    background-repeat: no-repeat;
+    -webkit-backdrop-filter: blur(16px) saturate(130%);
+    backdrop-filter: blur(16px) saturate(130%);
+  }
+}
+
 /* The travelling glint. Confined to the pane's top padding strip, which holds
    no text at any width, so it can be as bright as liquid glass needs. Parked
    off-pane left, walked across.
@@ -1399,16 +1719,42 @@ select.field__control {
   }
   .nav__menu.is-open { display: flex; }
 
+  .nav__links {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .nav__links li {
+    display: block;
+    width: 100%;
+  }
+
   .nav__link {
-    padding: 0.85rem 0;
+    display: block;
+    width: 100%;
+    padding: 0.9rem 0;
     border-bottom: 1px solid var(--lav-700);
-    font-size: 1rem;
+    font-size: 1.05rem;
+    text-align: left;
   }
   .nav__link::after { display: none; }
-  .nav__link.is-active { color: var(--indigo); }
+  .nav__link.is-active { color: var(--indigo); font-weight: 700; }
 
-  .nav__actions { margin-top: 1rem; }
-  .nav__actions .btn { width: 100%; }
+  .nav__actions {
+    margin-top: 1.25rem;
+    width: 100%;
+  }
+  .nav__actions .btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
 
   .footer__bar { justify-content: center; text-align: center; }
 
@@ -1423,12 +1769,25 @@ select.field__control {
      floor everywhere and need no touch-only override. */
 }
 
+@media (max-width: 899px) {
+  .location__grid { grid-template-columns: 1fr; }
+  .map-container { min-height: 380px; height: 380px; }
+  .map__overlay {
+    bottom: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    padding: 0.65rem 0.85rem;
+  }
+  .map__chip-text { font-size: 0.78rem; }
+  .map__directions-btn { padding: 0.35rem 0.8rem; font-size: 0.78rem; }
+}
+
 @media (min-width: 900px) {
   /* The hero stays a single centred column at every width. There is deliberately
      no .hero__grid override here - that is what used to left-align it. */
   .about__grid { grid-template-columns: 1.1fr 0.9fr; }
   .contact__grid { grid-template-columns: 0.9fr 1.1fr; }
-  .location__grid { grid-template-columns: 0.85fr 1.15fr; }
+  .location__grid { grid-template-columns: 0.9fr 1.1fr; align-items: stretch; }
   /* 1.6fr for the lead card: at 900px+ it has to hold "+91 99091 43989" and
      "1075-1076, Diamond Eco-3, Gabeni Gam, Sachin" without breaking either
      value across lines. */
@@ -1480,6 +1839,7 @@ select.field__control {
 .about-card.reveal,
 .service.reveal,
 .location__panel.reveal,
+.map-container.reveal,
 .map.reveal,
 .form.reveal {
   transform: translateY(32px) scale(0.98);
@@ -1489,6 +1849,7 @@ select.field__control {
 .about-card.reveal.is-in,
 .service.reveal.is-in,
 .location__panel.reveal.is-in,
+.map-container.reveal.is-in,
 .map.reveal.is-in,
 .form.reveal.is-in {
   opacity: 1;
