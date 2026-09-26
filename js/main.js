@@ -479,15 +479,21 @@
 
   function buildWhatsAppMessage(data) {
     var lines = [
-      "*New enquiry — Shivam Enterprise website*",
-      "",
-      "Name: " + (data.name || ""),
-      "Phone: " + (data.phone || ""),
-      "Email: " + (data.email || ""),
-      "Category: " + (data.category || "Not specified"),
-      "",
-      "Message:",
-      (data.message || ""),
+      "*New Enquiry — Shivam Enterprise*",
+      "━━━━━━━━━━━━━━━━━━━━━━",
+      "👤 *Inquirer:* " + (data.name || "-"),
+      "📞 *Phone:* " + (data.phone || "-"),
+      "✉️ *Email:* " + (data.email || "-"),
+      "🧵 *Category:* " + (data.category || "-"),
+      "━━━━━━━━━━━━━━━━━━━━━━",
+      "📝 *Requirement:*",
+      (data.message || "-"),
+      "━━━━━━━━━━━━━━━━━━━━━━",
+      "🕒 *Submitted:* " + new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        dateStyle: "medium",
+        timeStyle: "short"
+      })
     ];
     return lines.join("\n");
   }
@@ -539,9 +545,26 @@
         return;
       }
 
-      // Populate access key
+      var rawData = toObject(new FormData(form));
+      var name = (rawData.name || "").trim();
+      var phone = (rawData.phone || "").trim();
+      var email = (rawData.email || "").trim();
+      var category = (rawData.category || "").trim();
+      var message = (rawData.message || "").trim();
+
+      // Dynamic Subject Line: e.g. "New Enquiry: [TPM Yarn] — Rajesh Patel"
+      var dynamicSubject = "New Enquiry: [" + (category || "General") + "] — " + (name || "Website Inquirer");
+      var dynamicFrom = name ? (name + " (via Shivam Enterprise)") : "Shivam Enterprise Website";
+
+      // Populate hidden form inputs
       var keyInput = $("#w3f-access-key");
       if (keyInput) keyInput.value = cfg.key;
+      var subjInput = $("#w3f-subject");
+      if (subjInput) subjInput.value = dynamicSubject;
+      var fromInput = $("#w3f-from-name");
+      if (fromInput) fromInput.value = dynamicFrom;
+      var replyInput = $("#w3f-replyto");
+      if (replyInput && email) replyInput.value = email;
 
       // Web3Forms email route
       var original = submitText.textContent;
@@ -549,8 +572,24 @@
       submit.setAttribute("aria-disabled", "true");
       submitText.textContent = "Sending…";
 
-      var payload = toObject(new FormData(form));
-      payload.access_key = cfg.key;
+      var payload = Object.assign({}, rawData, {
+        access_key: cfg.key,
+        subject: dynamicSubject,
+        from_name: dynamicFrom,
+        replyto: email || undefined,
+        "Submitted At (IST)": new Date().toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata",
+          dateStyle: "full",
+          timeStyle: "medium"
+        })
+      });
+
+      // Quick WhatsApp direct link in email table if valid phone
+      var digitsOnly = (phone.match(/\d/g) || []).join("");
+      if (digitsOnly.length >= 10) {
+        var intlNumber = digitsOnly.length === 10 ? ("91" + digitsOnly) : digitsOnly;
+        payload["Quick WhatsApp Link"] = "https://wa.me/" + intlNumber;
+      }
 
       fetch("https://api.web3forms.com/submit", {
         method: "POST",
