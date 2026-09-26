@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo check &mdash; Shivam Enterprise</title>
+<link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --platinum:#edf2f4; --lavender:#8d99ae; --indigo:#2b2d42; --lav-400:#697994; --plat-600:#f0f4f6; --lav-700:#bbc2cf; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:2.5rem 1.5rem 4rem; background:var(--platinum); color:#4a4d72;
+         font-family:Inter,system-ui,sans-serif; line-height:1.6; }
+  .wrap { max-width:1000px; margin-inline:auto; }
+  h1 { color:var(--indigo); font-size:1.5rem; margin:0 0 .35rem; }
+  .sub { color:var(--lav-400); font-size:.875rem; margin:0 0 2rem; }
+  h2 { color:var(--indigo); font-size:.75rem; font-weight:700; letter-spacing:.08em;
+       text-transform:uppercase; margin:2.5rem 0 1rem; padding-bottom:.6rem; border-bottom:1px solid var(--lav-700); }
+  .card { background:var(--plat-600); border:1px solid var(--lav-700); border-radius:8px; padding:1.5rem; margin-bottom:1.25rem; }
+  .row { display:flex; flex-wrap:wrap; gap:1.75rem; align-items:flex-end; }
+  .cell { text-align:center; }
+  .cell span { display:block; margin-top:.5rem; font-size:.7rem; color:var(--lav-400); }
+  .chk { background-image:linear-gradient(45deg,#dde3e7 25%,transparent 25%),linear-gradient(-45deg,#dde3e7 25%,transparent 25%),
+         linear-gradient(45deg,transparent 75%,#dde3e7 75%),linear-gradient(-45deg,transparent 75%,#dde3e7 75%);
+         background-size:10px 10px; background-position:0 0,0 5px,5px -5px,-5px 0; }
+  .nav { display:flex; align-items:center; justify-content:space-between; gap:1rem; min-height:4.5rem;
+         padding:0 1.5rem; background:var(--platinum); border:1px solid var(--lav-700); border-radius:8px; }
+  .brand { display:inline-flex; align-items:center; }
+  .brand img { display:block; height:48px; width:auto; }
+  .navlinks { display:flex; gap:1.25rem; font-size:.875rem; font-weight:600; color:var(--lav-400); }
+  .btn { background:var(--indigo); color:var(--platinum); font-size:.875rem; font-weight:600; padding:.5rem 1rem; border-radius:6px; }
+  .foot { background:var(--indigo); color:var(--platinum); border-radius:8px; padding:1.25rem 1.5rem; font-size:1.125rem; font-weight:700; }
+  table { border-collapse:collapse; width:100%; font-size:.8rem; }
+  th, td { text-align:left; padding:.55rem .7rem; border-bottom:1px solid var(--lav-700); }
+  th { color:var(--indigo); font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; }
+  code { background:#e8ebef; padding:.1rem .35rem; border-radius:4px; font-size:.75rem; }
+  .warn { background:#fff8e6; border-left:3px solid #b8860b; padding:.85rem 1rem; border-radius:0 6px 6px 0; font-size:.8rem; }
+  .ok { background:#eef7f0; border-left:3px solid #2f6b46; padding:.85rem 1rem; border-radius:0 6px 6px 0; font-size:.8rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Logo check</h1>
+  <p class="sub">Live markup and CSS at real dimensions. Verify the section 1 navbar is present on the real site.</p>
+
+  <h2>1. Live navbar (48px tall, on Platinum)</h2>
+  <div class="card">
+    <div class="nav">
+      <span class="brand">
+        <picture>
+          <source srcset="images/logo.webp" type="image/webp">
+          <img class="brand__logo" src="images/logo.png" srcset="images/logo-2x.png 2x, images/logo-3x.png 3x"
+               width="39" height="48" alt="Shivam Enterprise" decoding="async">
+        </picture>
+      </span>
+      <span class="navlinks"><span>Home</span><span>About</span><span>What We Sell</span><span>Services</span><span>Location</span><span>Contact</span></span>
+      <span class="btn">Contact Us</span>
+    </div>
+    <p class="warn" style="margin-top:1.25rem"><strong>Please look at this honestly.</strong> Your artwork is a <em>portrait</em> mark (aspect &asymp;0.81), not a wide wordmark, so beside the nav links it reads as a small ~39px-wide emblem rather than a business name. Nothing is broken &mdash; but if you want &ldquo;Shivam Enterprise&rdquo; spelled out in the navbar, that has to be a horizontal lockup from whoever made the logo. It cannot be derived by cropping.</p>
+  </div>
+
+  <h2>2. The artwork &mdash; is anything clipped?</h2>
+  <div class="card">
+    <div class="row">
+      <div class="cell"><img src="images/logo-3x.png" width="117" height="144" alt=""><span>the real 3x file (117x144)</span></div>
+      <div class="cell"><img src="images/logo-3x.png" width="351" height="432" alt=""><span>3x, zoomed for inspection</span></div>
+    </div>
+    <p class="ok" style="margin-top:1.25rem">Checkerboard behind the left image proves the transparency survived. If any stroke or letterform looks shaved flat on an edge, say so and I will re-pad.</p>
+  </div>
+
+  <h2>3. 1x / 2x / 3x</h2>
+  <div class="card">
+    <div class="row">
+      <div class="cell"><img src="images/logo.png" width="39" height="48" alt=""><span>1x &middot; 39x48 &middot; 4,811 B png / 2,076 B webp</span></div>
+      <div class="cell"><img src="images/logo-2x.png" width="78" height="96" alt=""><span>2x &middot; 78x96</span></div>
+      <div class="cell"><img src="images/logo-3x.png" width="117" height="144" alt=""><span>3x &middot; 117x144</span></div>
+    </div>
+  </div>
+
+  <h2>4. Favicon</h2>
+  <div class="card">
+    <div class="row">
+      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon.svg" width="16" height="16" alt=""></span><span>16 &middot; real tab size</span></div>
+      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon.svg" width="32" height="32" alt=""></span><span>32</span></div>
+      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon.svg" width="64" height="64" alt=""></span><span>64</span></div>
+    </div>
+    <p class="ok" style="margin-top:1.25rem">A drawn &ldquo;S&rdquo;, on-palette, 930 bytes. <strong>Not</strong> your logo: <code>Sivam_Enterprise_Logo_Transparent.svg</code> looks like a vector but is a 1.85&nbsp;MB raster in an <code>&lt;svg&gt;</code> wrapper, and as a favicon it made every tab fetch ~1.9&nbsp;MB. That, plus a 1.33&nbsp;MB PNG in the navbar, was the lag.</p>
+  </div>
+
+  <h2>5. Footer &mdash; text wordmark kept deliberately</h2>
+  <div class="card">
+    <div class="foot">Shivam Enterprise</div>
+    <p class="warn" style="margin-top:1.25rem">The logo is too dark to read on the Indigo footer band, and lightening a flattened raster would destroy its colour. So the footer keeps Platinum text.</p>
+  </div>
+
+  <h2>6. What ships</h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>File</th><th>Pixels</th><th>Bytes</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td><code>logo.webp</code></td><td>39x48</td><td>2,076</td><td>1x, modern browsers</td></tr>
+        <tr><td><code>logo.png</code></td><td>39x48</td><td>4,811</td><td>1x fallback</td></tr>
+        <tr><td><code>logo-2x.webp</code> / <code>.png</code></td><td>78x96</td><td>5,456 / 14,584</td><td>2x</td></tr>
+        <tr><td><code>logo-3x.webp</code> / <code>.png</code></td><td>117x144</td><td>9,500 / 27,280</td><td>3x</td></tr>
+        <tr><td><code>favicon.svg</code></td><td>32x32 vector</td><td>930</td><td>tab icon</td></tr>
+      </tbody>
+    </table>
+    <p class="ok" style="margin-top:1.25rem">A visitor downloads <strong>one</strong> derivative: 2&ndash;27&nbsp;KB, against a 1.33&nbsp;MB source &mdash; a <strong>99.9%</strong> reduction. The source files are never served.</p>
+  </div>
+
+</div>
+</body>
+</html>

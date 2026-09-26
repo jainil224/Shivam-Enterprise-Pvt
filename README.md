@@ -206,9 +206,28 @@ css/style.css           design tokens -> components -> responsive rules
 js/data.js              <-- EDIT THIS for all business details
 js/main.js              menu, scroll-spy, validation, form submit, rendering
 images/                 10 in-palette placeholder SVGs
+images/logo.webp        navbar logo 1x (39x48)  <- the live logo
+images/logo.png         navbar logo 1x fallback
+images/logo-2x.*        2x (78x96)
+images/logo-3x.*        3x (117x144)
+images/favicon.svg      tab icon (S monogram, 930-byte on-palette vector)
+scripts/build-logo-assets.py   regenerates the 6 logo derivatives from source
 design.md               the visual design system (source of truth)
 prompt.md               the build brief (source of truth)
 ```
+
+### Logo and favicon
+
+The navbar shows the logo image at 48px tall; there is no text wordmark beside it. A visitor downloads one derivative via `<picture>` (WebP, PNG fallback, `2x`/`3x` `srcset`) — about 2–27 KB. The source artwork is 1.33 MB, so **never point the page at the source file directly**; that mistake put 1.33 MB in the header of every page load and was the main reason the site felt slow.
+
+`images/Sivam_Enterprise_Logo_Transparent.svg` is **not** a vector, despite the extension — it is a 1.85 MB raster wrapped in an `<svg>` tag with zero `<path>` elements. Do not use it as a favicon; browsers will fetch the whole 1.85 MB.
+
+The artwork is a **portrait** mark (aspect ≈0.81), not a wide wordmark, so it renders as a ~39px wide mark beside the nav links. A horizontal lockup would need to come from the designer. Print, embroidery and signage need a true outlined vector — do not upscale the derivatives.
+
+See `design.md` §6.1 for the full asset spec. Regenerate with `python scripts/build-logo-assets.py` (needs Pillow); output is deterministic.
+
+Open `logo-check.html` in a browser to review the logo and favicon at real sizes. It is a review page, not part of the site; delete it once you are happy.
+
 
 ### Sections and how they are built
 
@@ -246,10 +265,18 @@ prompt.md               the build brief (source of truth)
 Plus the two text shades sanctioned in `design.md` §2.4: `#4a4d72` (body) and
 `#697994` (muted).
 
-**Measured coverage at 1440 px** is **68% Platinum / 25% Lavender / 7% Indigo**.
-The Lavender Grey band carries the stats strip, the What We Sell section and the
-Location section; the two Lavender sections exist to move the ratio toward the
-60/30/10 target without changing the palette.
+**One standing exception, the logo.** The client's logo artwork is a fixed brand
+asset and carries its own near-black navy (`#081929`) and gold/tan
+(`#a08060`–`#c0a080`). It is exempt from the table above and may not be
+recoloured. Because it is raster, those hex values appear in no stylesheet — the
+contract still holds for all CSS. See `design.md` §6.1. The favicon is *not* an
+exception: it uses `--indigo` on `--platinum`.
+
+**Measured coverage at 1440 px** is **69.4% Platinum family / 22.6% Lavender
+family / 8.0% Indigo family**. The Lavender Grey band carries the stats strip,
+the What We Sell section and the Location section; the two Lavender sections
+exist to move the ratio toward the 60/30/10 target without changing the palette.
+
 
 **One deviation from `design.md`, deliberate.** §2.4 lists Lavender Grey
 `#8d99ae` for muted text, but that is only **2.67:1** on Platinum and fails the

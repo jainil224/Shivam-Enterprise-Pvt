@@ -171,6 +171,55 @@
   }
 
   /* ======================================================================
+     SCROLL READER — one rAF-throttled scroll pipeline.
+
+     Before this, three separate things each ran a raw `scroll` listener and
+     each did layout work per event: the header shadow, the scroll-spy, and
+     the reduced-motion anchor handler. On a trackpad that is one event per
+     frame, so any synchronous getBoundingClientRect() in the path forces a
+     layout flush on every frame. This is the actual source of the "laggy"
+     feeling, not the amount of content.
+
+     Everything scroll-driven now hangs off ONE passive listener that sets a
+     dirty flag, and the real work happens once per animation frame.
+     ====================================================================== */
+  var scrollTasks = [];
+  var scrollQueued = false;
+
+  function onScrollFrame(fn) { scrollTasks.push(fn); }
+
+  function flushScroll() {
+    scrollQueued = false;
+    for (var i = 0; i < scrollTasks.length; i++) scrollTasks[i]();
+  }
+
+  function initScrollReader() {
+    if (scrollTasks.length) return;
+    window.addEventListener("scroll", function () {
+      if (scrollQueued) return;
+      scrollQueued = true;
+      window.requestAnimationFrame(flushScroll);
+    }, { passive: true });
+    // Layout changes (images decoding, fonts swapping) move every section,
+    // so cached offsets must be invalidated rather than left stale.
+    window.addEventListener("resize", function () {
+      if (scrollQueued) return;
+      scrollQueued = true;
+      window.requestAnimationFrame(flushScroll);
+    }, { passive: true });
+  }
+
+  /* ======================================================================
+     REDUCED MOTION — read once, and react if the user flips the setting
+     mid-session (macOS sends this live when the setting is toggled).
+     ====================================================================== */
+  var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var reducedMotion = motionQuery.matches;
+  onMediaChange("(prefers-reduced-motion: reduce)", function (e) {
+    reducedMotion = e.matches;
+  });
+
+  /* ======================================================================
      NAVBAR — sticky shadow, mobile menu
      ====================================================================== */
   function initNav() {
@@ -179,11 +228,13 @@
     var menu = $("#nav-menu");
     if (!header) return;
 
-    var onScroll = function () {
-      header.classList.toggle("is-stuck", window.scrollY > 8);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
+    var stuck = null;
+    onScrollFrame(function () {
+      var next = window.scrollY > 8;
+      if (next === stuck) return;           // no class churn when unchanged
+      stuck = next;
+      header.classList.toggle("is-stuck", next);
+    });
 
     if (!toggle || !menu) return;
 
@@ -221,73 +272,133 @@
   }
 
   /* ======================================================================
-     SCROLL SPY — lights the matching nav link for whichever section is
-     currently in view. Sections are matched by their data-nav attribute,
-     so the nav label and the section id never have to match.
+     SCROLL SPY — the "where am I" indicator.
+
+     Lights the matching nav link for whichever section is in view, and mirrors
+     the position into the URL hash without adding history entries, so the
+     address bar always names the section you are looking at and Back still
+     leaves the page in one step.
+
+     Cost control: the observer only records WHICH sections are candidates
+     (a boolean map, no geometry). The active section is then picked from
+     cached offsets in one pass, so a scroll frame performs O(1) reads instead
+     of getBoundingClientRect() on every section.
      ====================================================================== */
   function initScrollSpy() {
     var links = $$(".nav__link[data-nav]");
-    if (!links.length || !("IntersectionObserver" in window)) return;
+    if (!links.length) return;
 
-    var sections = $$("[data-nav]");
-    var visible = {};
+    /* Scope to the SECTIONS. A bare [data-nav] selector also matches the six
+       nav links, which carry data-nav but have no id - so the list came back
+       with 12 entries, the measured offsets belonged to header links rather
+       than sections, and the id lookup below resolved to "" and wrote a bare
+       "#" into the address bar. */
+    var sections = $$("section[data-nav]");
+    if (!sections.length) return;
+
+    /* nav key -> section element, built once. Looked up by key rather than by
+       re-filtering the array on every active change. */
+    var byNav = {};
+    sections.forEach(function (s) { byNav[s.dataset.nav] = s; });
+
+    var current = null;
 
     var setActive = function (key) {
+      if (key === current) return;          // guard: no DOM writes if unchanged
+      current = key;
       links.forEach(function (l) {
         var on = l.getAttribute("data-nav") === key;
         l.classList.toggle("is-active", on);
         if (on) l.setAttribute("aria-current", "true");
         else l.removeAttribute("aria-current");
       });
+      // replaceState, never pushState: no history spam, no scroll jump, and
+      // Back still leaves the site in a single step.
+      if (history.replaceState) {
+        var target = byNav[key];
+        var hash = target ? "#" + target.id : "";
+        if (hash && hash !== location.hash) history.replaceState(null, "", hash);
+      }
     };
 
-    var pick = function () {
-      // Choose the topmost section currently in view, else fall back to the
-      // last one scrolled past.
-      var best = null;
-      var bestTop = -Infinity;
-      sections.forEach(function (s) {
-        if (!visible[s.id + s.dataset.nav]) return;
-        var top = s.getBoundingClientRect().top;
-        if (top < bestTop) return;
-        bestTop = top;
-        best = s;
+    // One cached read per section, refreshed only when layout may have moved.
+    var tops = [];
+    function measure() {
+      tops = sections.map(function (s) {
+        return { nav: s.dataset.nav, top: s.getBoundingClientRect().top + window.scrollY };
       });
-      if (best) setActive(best.dataset.nav);
+    }
+
+    /* The line that decides "current", expressed in DOCUMENT coordinates:
+       a band 140px below the top of the viewport. Any section whose top has
+       crossed it is behind us, and the last such section is the active one.
+       Using one reading point avoids the ambiguity of two sections being
+       partly visible at once.
+
+       `tops` holds absolute document offsets, so the comparison has to be
+       made against scrollY + line. Comparing against `line` alone pins the
+       result to the first section and the highlight never moves. */
+    var probe = function () {
+      var line = window.scrollY + 140;
+      var best = sections[0].dataset.nav;
+      for (var i = 0; i < tops.length; i++) {
+        if (tops[i].top <= line) best = tops[i].nav;
+        else break;
+      }
+      // At the very bottom, the last section may still be short of the line.
+      var scrolled = window.innerHeight + window.scrollY;
+      var max = document.documentElement.scrollHeight;
+      if (scrolled >= max - 2) best = tops[tops.length - 1].nav;
+      setActive(best);
     };
 
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        visible[en.target.id + en.target.dataset.nav] = en.isIntersecting;
-      });
-      pick();
-    }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+    var scheduled = false;
+    function schedule() {
+      if (scheduled) return;
+      scheduled = true;
+      window.requestAnimationFrame(function () { scheduled = false; measure(); probe(); });
+    }
 
-    sections.forEach(function (s) { io.observe(s); });
+    if ("IntersectionObserver" in window) {
+      // Rebuild the cache whenever the set of observed sections changes size,
+      // which is the only reliable signal that layout shifted.
+      var io = new IntersectionObserver(schedule, { rootMargin: "0px", threshold: 0 });
+      sections.forEach(function (s) { io.observe(s); });
+    }
 
-    // Keep the highlight correct right at the very top of the page.
-    window.addEventListener("scroll", function () {
-      if (window.scrollY < 40) setActive("home");
-    }, { passive: true });
+    onScrollFrame(probe);
+    window.addEventListener("load", schedule);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+    schedule();
   }
 
   /* ======================================================================
-     SMOOTH SCROLL — for browsers without CSS scroll-behavior, and to
-     respect prefers-reduced-motion.
+     SMOOTH SCROLL
+
+     The CSS already does this: `html { scroll-behavior: smooth }` plus
+     `scroll-padding-top` for the header offset. The old JS handler made
+     browsers do the work TWICE — CSS started a smooth scroll and then
+     scrollIntoView({behavior:"smooth"}) started a second one over the top of
+     it, which reads as a stutter. It also pushState'd on every click, so
+     Back had to be pressed once per section visited.
+
+     All that is left to do here is move focus to the target, which native
+     anchor navigation does inconsistently for keyboard and screen-reader
+     users.
      ====================================================================== */
   function initAnchors() {
-    var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return;
-
     $$('a[href^="#"]').forEach(function (a) {
       var id = a.getAttribute("href");
       if (!id || id === "#" || id.length < 2) return;
       var target = document.getElementById(id.slice(1));
       if (!target) return;
-      a.addEventListener("click", function (e) {
-        e.preventDefault();
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-        if (history.pushState) history.pushState(null, "", id);
+
+      a.addEventListener("click", function () {
+        // Let the browser perform the scroll; only fix up focus afterwards.
+        window.requestAnimationFrame(function () {
+          if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+          target.focus({ preventScroll: true });
+        });
       });
     });
   }
@@ -443,30 +554,79 @@
      REVEAL ON SCROLL
      ====================================================================== */
   function initReveal() {
-    if (!("IntersectionObserver" in window)) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
     var targets = $$(".card, .service");
+    if (!targets.length) return;
 
-    // Only animate what starts below the fold — anything already on screen
-    // must never be left invisible if the observer misbehaves.
-    targets = targets.filter(function (el) {
-      if (el.getBoundingClientRect().top <= window.innerHeight) return false;
-      el.classList.add("reveal");
-      el.style.transitionDelay = (targets.indexOf(el) % 4) * 60 + "ms";
-      return true;
-    });
+    /* Reduced motion: show everything at once. The old code simply `return`ed,
+       which left every element permanently invisible — the content was
+       genuinely gone for those users. */
+    if (reducedMotion || !("IntersectionObserver" in window)) {
+      targets.forEach(function (el) { el.classList.add("is-in"); });
+      return;
+    }
+
+    var fold = window.innerHeight;
+    var below = [];
+    var index = 0;
+    for (var i = 0; i < targets.length; i++) {
+      // Anything already on screen at load must never be hidden: if the
+      // observer misfires, the content is unreachable.
+      if (targets[i].getBoundingClientRect().top > fold) below.push(targets[i]);
+    }
+
+    // Stagger within each group of four, then write in a second pass so the
+    // reads above are never interleaved with style writes.
+    for (var j = 0; j < below.length; j++) {
+      below[j].classList.add("reveal");
+      below[j].style.transitionDelay = (index++ % 4) * 60 + "ms";
+    }
 
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
-        if (en.isIntersecting) {
-          en.target.classList.add("is-in");
-          io.unobserve(en.target);
-        }
+        if (!en.isIntersecting) return;
+        en.target.classList.add("is-in");
+        en.target.style.transitionDelay = "";   // stop delaying later hovers
+        io.unobserve(en.target);
       });
     }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
 
-    targets.forEach(function (el) { io.observe(el); });
+    below.forEach(function (el) { io.observe(el); });
+
+    /* If the viewport grows (rotation, desktop resize) an element that was
+       below the fold at load may now be on screen while still at opacity 0.
+       Promote anything now visible rather than leaving a blank block. */
+    onScrollFrame(function () {
+      if (window.innerHeight <= fold) return;
+      fold = window.innerHeight;
+    });
+  }
+
+  /* ======================================================================
+     TICKER — pause the marquee when it is off screen.
+
+     `ticker-scroll` is an infinite 28s transform animation on a track that is
+     two copies of the content side by side. It never stopped, so it burned a
+     compositor frame budget for the entire time the visitor was anywhere
+     else on the page. Animating only while visible removes that cost
+     outright, and the pause is invisible because nothing is on screen.
+     ====================================================================== */
+  function initTicker() {
+    var tickers = $$(".ticker");
+    if (!tickers.length || !("IntersectionObserver" in window)) return;
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        en.target.classList.toggle("is-offscreen", !en.isIntersecting);
+      });
+    }, { threshold: 0 });
+
+    tickers.forEach(function (t) {
+      io.observe(t);
+      if (reducedMotion) t.classList.add("is-offscreen");
+    });
+    onMediaChange("(prefers-reduced-motion: reduce)", function (e) {
+      tickers.forEach(function (t) { t.classList.toggle("is-offscreen", e.matches); });
+    });
   }
 
   /* ======================================================================
@@ -478,12 +638,14 @@
 
     renderContact();
     renderLocation();
+    initScrollReader();   // must exist before anything registers a task
     initNav();
     initAnchors();
     initScrollSpy();
     initValidation();
     initSubmit();
     initReveal();
+    initTicker();
   }
 
   if (document.readyState === "loading") {

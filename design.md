@@ -163,7 +163,7 @@ if you want to save the request.
 
 ### 5.1 Navbar
 - Background: Platinum (or Platinum 600 `#f0f4f6` for subtle separation)
-- Logo text: Space Indigo, bold
+- Logo: the supplied Shivam Enterprise logo image, rendered 40px tall (see §6.1). No text wordmark alongside it in the navbar
 - Nav links: Space Indigo 600 text, Lavender Grey when inactive/default
 - Active link: Space Indigo with underline or bottom border accent
 - Bottom border: 1px Lavender Grey hairline (`#bbc2cf`) to separate navbar from content
@@ -200,6 +200,7 @@ Buttons should have rounded corners (6–10px radius), medium padding (12px × 2
 - Text: Platinum (light text on dark background)
 - Links: Platinum with hover to Lavender Grey 800
 - Divider lines: subtle Lavender Grey at low opacity
+- Wordmark: keep the **text** wordmark "Shivam Enterprise" here, do not reuse the logo image. See §6.1 for the contrast reason
 
 ### 5.6 Icons
 - Style: Simple line icons (outline style, not filled), consistent stroke width
@@ -215,6 +216,51 @@ Buttons should have rounded corners (6–10px radius), medium padding (12px × 2
 - Use clean, well-lit product photos on neutral (Platinum) backgrounds so the yarn colors stand out naturally without needing colorful UI around them
 - Avoid colorful banners, gradients, or illustrations that compete with product photos
 - Hero section: one high-quality yarn/product image or a simple textured yarn photo, paired with Space Indigo heading text on a Platinum background
+
+### 6.2 Motion & Scroll Performance
+
+The site must stay smooth on a mid-range Android phone. The rules below exist because each one was a measured source of jank, not as theory.
+
+- **One scroll listener, one rAF.** All scroll-driven work (header shadow, scroll-spy) registers through `onScrollFrame()` in `js/main.js` and runs at most once per animation frame. Never add a raw `scroll` listener that reads layout, and never call `getBoundingClientRect()` on every frame — each read forces a synchronous layout flush, which is what "laggy" actually feels like.
+- **Reveal animates only `opacity` and `transform`.** Both are compositor-only, so revealing a card never triggers layout or paint of its contents. `will-change` is set on `.reveal` and released on `.is-in` — leaving it on ~27 elements permanently holds that much GPU memory for nothing.
+- **The ticker pauses when off screen.** `initTicker()` adds `.is-offscreen` via IntersectionObserver and CSS sets `animation-play-state: paused`. An infinite 28s transform animation otherwise burns compositor budget for the whole time the visitor is anywhere else on the page. There is no CSS-only way to express "off screen", which is why this is in JS.
+- **`prefers-reduced-motion` must never hide content.** `.reveal` starts at `opacity: 0`, so the reduced-motion block has to force `opacity: 1 !important`, and `initReveal()` adds `.is-in` to everything. An earlier revision simply returned early for these users, which left every card and service permanently invisible.
+- **Smooth scrolling is CSS-only.** `html { scroll-behavior: smooth }` plus a single `scroll-padding-top` for the header offset. Do not also call `scrollIntoView({behavior:"smooth"})` — the browser runs both and it reads as a stutter. JS only moves focus for keyboard users.
+- **Scroll-spy mirrors the position with `replaceState`, never `pushState`.** `pushState` per click made Back need one press per section visited. Sections are selected with `section[data-nav]`, not `[data-nav]` — the bare attribute selector also matches the six nav links, which have no `id`.
+- **Tap targets are ≥44px**, including the footer social icons (`2.75rem`). These are invisible until real URLs are set in `js/data.js`, so their size is easy to leave wrong.
+
+### 6.1 Brand Assets — Logo & Favicon
+
+**Source artwork.** `images/ChatGPT Image Sep 26, 2026, 08_24_03 PM.png` is the current client artwork: 1124×1399 RGBA, 1.33 MB. It is the only logo file the page is allowed to derive from.
+
+Two earlier files are kept for provenance only and are **never served**:
+
+- `images/logo-source.svg` — the first file the client supplied. Despite the `.svg` extension it is not vector art, just a 941×1672 PNG inside an `<svg>` wrapper.
+- `images/Sivam_Enterprise_Logo_Transparent.svg` — 1.85 MB, and the same trick: an embedded raster, 0 `<path>` elements, same 941×1672 viewBox. The extension is misleading. **Never point an `<link rel="icon">` at this file** — doing so made every browser tab fetch ~1.9 MB.
+
+**Production derivatives** (transparent, alpha preserved, ink present at every size):
+
+| File | Pixels | Bytes | Role |
+|---|---|---|---|
+| `images/logo.webp` | 39×48 | 2,076 | 1x, modern browsers |
+| `images/logo.png` | 39×48 | 4,811 | 1x fallback |
+| `images/logo-2x.webp` / `.png` | 78×96 | 5,456 / 14,584 | 2x |
+| `images/logo-3x.webp` / `.png` | 117×144 | 9,500 / 27,280 | 3x |
+| `images/favicon.svg` | 32×32 vector | 930 | tab icon |
+
+Served via `<picture>`: a WebP `<source>` plus a PNG `src` carrying the `2x`/`3x` `srcset`. A visitor downloads **one** derivative — 2–27 KB against the 1.33 MB source, a **99.9%** reduction. Referencing the source PNG directly (as an earlier revision did) put 1.33 MB in the header of every page load, which is what made the site feel slow.
+
+**The artwork is portrait, not a wide wordmark.** Ink bounds are 1108×1376, aspect ≈ 0.81, against a display box of 39×48 (aspect 0.8125). The derivatives preserve the whole mark and only trim empty canvas (8px pad). An earlier revision forced it into a 140×48 box with `object-fit: contain`, which letterboxed the mark down to ~39px wide and left ~100px of dead space beside it. The display box now matches the artwork's own aspect. If a horizontal lockup is wanted for the navbar, commission one — do not re-composition the logo in the build.
+
+**Palette exception (approved).** The logo is the client's own artwork and is deliberately exempt from the §2 colour system; as a fixed brand asset it may not be recoloured to fit. It is raster, so its colours appear in no stylesheet and the §2 contract still holds for all CSS.
+
+**Why the footer keeps the text wordmark.** The footer band is Space Indigo `#2b2d42`. A near-black logo on it measured ≈1.25:1 — effectively invisible — and safely lightening a flattened raster is not possible without destroying its gold. The footer therefore keeps the Platinum text wordmark. A designer-supplied vector with a reversed variant would be required to change this.
+
+**Favicon.** `images/favicon.svg` is a hand-drawn `S` monogram — Space Indigo `#2b2d42` on Platinum `#edf2f4`, `stroke-width="3"` in a 32×32 viewBox. It is on-palette and 930 bytes. It is deliberately not the full logo: a detailed portrait mark is an unreadable smudge at 16px, and the real artwork is 1.85 MB as an `.svg`.
+
+**Print / large format limitation.** The logo originates from a ~1124px raster, so it is web-only. Print, embroidery, signage and packaging need a true outlined vector from the designer. Do not upscale `logo-3x.png` for those.
+
+**Regenerating derivatives.** Run `python scripts/build-logo-assets.py` (needs Pillow). It crops to the ink bounds and re-emits all six files deterministically. If a true vector arrives, point `SRC` in that script at it and re-run, then re-check the LOGO section of the verification suite. Do not hand-edit the derivatives.
 
 ---
 

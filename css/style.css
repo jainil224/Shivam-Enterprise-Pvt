@@ -283,18 +283,21 @@ h3 { font-size: var(--fs-h3); font-weight: 600; }
   min-height: var(--nav-h);
 }
 
+/* The brand is the logo image, not text. align-items is "center" rather than
+   the previous "baseline": a replaced element aligned to the text baseline
+   sits visibly low. Colour and text-decoration are kept only so the anchor
+   inherits sensibly; the visible colour comes from the image pixels. */
 .brand {
   display: inline-flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  font-size: 1.125rem;
-  font-weight: 700;
+  align-items: center;
   color: var(--indigo);
   text-decoration: none;
-  white-space: nowrap;
 }
-.brand:hover { color: var(--indigo); }
-.brand__mark { color: var(--lav-400); font-weight: 600; }
+.brand__logo {
+  display: block;
+  height: 48px;
+  width: auto;
+}
 
 .nav__links {
   display: flex;
@@ -440,9 +443,21 @@ h3 { font-size: var(--fs-h3); font-weight: 600; }
   display: flex;
   width: max-content;
   animation: ticker-scroll 28s linear infinite;
+  /* Promoted to its own compositor layer so the 28s loop animates on the GPU
+     and never repaints the text inside it. */
+  will-change: transform;
 }
 
-.ticker:hover .ticker__track {
+/* Added by initTicker() when the marquee is scrolled out of view. Pausing it
+   frees the whole frame budget; because nothing is on screen, the pause is
+   invisible. `animation-play-state` cannot do this from CSS alone — there is
+   no selector for "element is off screen". */
+.ticker.is-offscreen .ticker__track {
+  animation-play-state: paused;
+}
+
+.ticker:hover .ticker__track,
+.ticker:focus-within .ticker__track {
   animation-play-state: paused;
 }
 
@@ -474,15 +489,6 @@ h3 { font-size: var(--fs-h3); font-weight: 600; }
   }
   100% {
     transform: translateX(-50%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ticker__track {
-    animation: none;
-  }
-  .ticker {
-    overflow-x: auto;
   }
 }
 
@@ -950,7 +956,8 @@ textarea.field__control {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem; height: 2.25rem;
+      width: 2.75rem; height: 2.75rem;
+
   border: 1px solid var(--lav-400);
   border-radius: var(--radius);
   color: var(--platinum);
@@ -977,8 +984,17 @@ textarea.field__control {
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 500ms ease, transform 500ms ease;
+  /* Only opacity and transform are animated — both are compositor-only, so
+     revealing a card never triggers layout or paint of its contents. */
+  will-change: opacity, transform;
 }
-.reveal.is-in { opacity: 1; transform: none; }
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+  /* Hand the layer back once the animation is done. Leaving `will-change` set
+     on ~27 elements permanently holds that much GPU memory for nothing. */
+  will-change: auto;
+}
 /* --------------------------------------------------------------------------
    15. RESPONSIVE  (mobile-first: base = phone, 768 = tablet, 1024 = desktop)
    -------------------------------------------------------------------------- */
@@ -1075,9 +1091,19 @@ textarea.field__control {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .reveal { opacity: 1; transform: none; }
+  /* Must win over `.reveal { opacity: 0 }` above, or every card and service
+     stays invisible for these users. initReveal() also adds .is-in in JS;
+     this is the no-JS / pre-hydration safety net. */
+  .reveal,
+  .reveal.is-in {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .ticker__track { animation: none; }
+  .ticker { overflow-x: auto; }
 }
 
 @media print {

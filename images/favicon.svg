@@ -1,0 +1,12 @@
+<!-- Favicon: a single "S" for Shivam Enterprise.
+     The real logo cannot serve this purpose - at a 16x16 tab it renders about
+     12x13px and becomes an unreadable smudge. This is drawn heavier on
+     purpose: stroke-width 3 on a 32 grid lands at ~1.5px when displayed at
+     16px, rather than the ~1.0px the logo's own stroke weight would give.
+     Colours are the site palette only: Space Indigo on Platinum. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Shivam Enterprise">
+  <rect width="32" height="32" rx="7" fill="#edf2f4"/>
+  <g transform="translate(4 4)" fill="none" stroke="#2b2d42" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16.4 6.8C16.4 4.6 14.4 3.4 12 3.4 9.2 3.4 7.4 5 7.4 7.2 7.4 9.4 9.6 10.4 12 11.2 14.4 12 16.6 13 16.6 15.2 16.6 17.4 14.6 19 11.8 19 9.2 19 7.4 18.4 7.4 16.8"/>
+  </g>
+</svg>
