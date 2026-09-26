@@ -948,19 +948,172 @@ select.field__control {
 
 /* --------------------------------------------------------------------------
    13. FOOTER  (design.md 5.5 - Space Indigo band per prompt.md 4.9)
+
+   Liquid-glass treatment, three layers deep:
+
+     1. .site-footer        flat Indigo band, the "liquid" being looked through
+     2. .site-footer__glow  two slow-drifting aurora pools behind the glass
+     3. .footer__glass      one large frosted pane with a glint travelling
+        .footer__card       along its top edge, holding four glass cards
+
+   Everything is pure CSS - no JS, no SVG filters, no new hex values. The
+   glass fills are rgba() of palette colours already sanctioned in the colour
+   contract (section 1), the same technique the shadows use.
+
+   WHY EVERY OVERLAY DARKENS AND NONE BRIGHTENS
+   The footer carries light text on a dark band, and the muted role
+   (--lavender, used by .footer__tagline, .footer__list span and .footer__bar)
+   clears AA on flat Indigo by only 4.69:1. That is 0.19:1 of headroom, so
+   ANY translucent white laid over the band pushes it under AA - a Platinum
+   14% sheen over the bar text measures 3.07:1. So the aurora and both glass
+   fills are Indigo tints, which deepen the backdrop and *raise* the ratio,
+   and the travelling glint is confined to the pane's top padding strip,
+   which contains no text at any breakpoint. Measured worst case for the
+   muted role across the whole treatment is 4.75:1, i.e. the effect costs
+   nothing in legibility.
    -------------------------------------------------------------------------- */
 .site-footer {
+  position: relative;
+  /* Own stacking context: keeps the glow blobs between the band's own
+     background and the content, and stops them painting over main. */
+  isolation: isolate;
+  /* Blobs are deliberately positioned past the band's edges and scale up to
+     1.18x while drifting. As absolutely positioned boxes they still count
+     toward the document's scrollable overflow, which on a 390px phone pushed
+     scrollWidth to 461px and gave the whole page a sideways scrollbar. The
+     band clips them; they are soft gradients fading to 0 alpha, so nothing
+     visible is lost. */
+  overflow: hidden;
   background-color: var(--indigo);
   color: var(--text-on-dark);
-  padding-block: clamp(2.5rem, 5vw, 3.5rem) 0;
+  padding-block: clamp(2.5rem, 5vw, 3.5rem) clamp(1.5rem, 3vw, 2.25rem);
 }
 .site-footer a { color: var(--platinum); }
 .site-footer a:hover { color: var(--indigo-700); }
 
+/* ---- 2. The aurora behind the glass --------------------------------------
+   Two radial-gradient pools, blurred hard so the gradient stops read as soft
+   depth rather than as circles. Indigo 200 and Indigo 300 - both darker than
+   the band, so they read as liquid shadow and cost no text contrast. Offsets
+   and durations are mismatched so the two never pulse in step. */
+.site-footer__glow {
+  position: absolute;
+  z-index: -1;
+  display: block;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.site-footer__glow--a {
+  top: -18%;
+  left: -12%;
+  width: min(46rem, 78vw);
+  height: min(46rem, 78vw);
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(17, 18, 26, 0.9) 0%,      /* indigo-200 */
+    rgba(17, 18, 26, 0.34) 44%,
+    rgba(17, 18, 26, 0) 72%
+  );
+  filter: blur(60px);
+  animation: footer-drift-a 22s ease-in-out infinite alternate;
+}
+
+.site-footer__glow--b {
+  right: -14%;
+  bottom: -28%;
+  width: min(40rem, 70vw);
+  height: min(40rem, 70vw);
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(25, 27, 39, 0.72) 0%,     /* indigo-300 */
+    rgba(25, 27, 39, 0.26) 46%,
+    rgba(25, 27, 39, 0) 74%
+  );
+  filter: blur(70px);
+  animation: footer-drift-b 28s ease-in-out infinite alternate;
+}
+
+@keyframes footer-drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(4rem, 2.5rem, 0) scale(1.18); }
+}
+@keyframes footer-drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.12); }
+  to   { transform: translate3d(-3.5rem, -2rem, 0) scale(1); }
+}
+
+/* ---- 3a. The large glass pane --------------------------------------------- */
+.footer__glass {
+  /* Shared with the glint below so the highlight always tracks the pane's own
+     top padding exactly, at every breakpoint. */
+  --glass-pad-y: clamp(1.5rem, 3.5vw, 2.75rem);
+  position: relative;
+  /* Clips the glint to the pane's rounded corners. */
+  overflow: hidden;
+  padding: var(--glass-pad-y) clamp(1rem, 2.5vw, 2rem) 0;
+  border: 1px solid rgba(141, 153, 174, 0.22);   /* lavender hairline */
+  border-radius: 20px;
+  /* Indigo 200 at 14%. Glass over a dark surface reads as a dark, saturated
+     pane - it separates from the band by tint, not by brightness. */
+  background-color: rgba(17, 18, 26, 0.14);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  /* Lifted edge: dark contact shadow below, faint Platinum catch-light above. */
+  box-shadow:
+    0 18px 40px rgba(17, 18, 26, 0.34),
+    inset 0 1px 0 rgba(237, 242, 244, 0.16);
+}
+
+/* The travelling glint. Confined to the pane's top padding strip, which holds
+   no text at any width, so it can be as bright as liquid glass needs while the
+   muted role stays at 4.75:1 or better. Parked off-pane left, walked across. */
+.footer__glass::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: var(--glass-pad-y);
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    rgba(237, 242, 244, 0) 0%,
+    rgba(237, 242, 244, 0.06) 35%,
+    rgba(237, 242, 244, 0.16) 50%,
+    rgba(237, 242, 244, 0.06) 65%,
+    rgba(237, 242, 244, 0) 100%
+  );
+  transform: skewX(-14deg);
+  will-change: transform;
+  animation: footer-sweep 9s ease-in-out infinite alternate;
+}
+
+@keyframes footer-sweep {
+  from { transform: translateX(0) skewX(-14deg); }
+  to   { transform: translateX(340%) skewX(-14deg); }
+}
+
+/* ---- 3b. The per-column glass cards --------------------------------------- */
+.footer__card {
+  position: relative;
+  padding: clamp(1.1rem, 2vw, 1.5rem);
+  border: 1px solid rgba(237, 242, 244, 0.1);
+  border-radius: 14px;
+  background-color: rgba(17, 18, 26, 0.1);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  backdrop-filter: blur(10px) saturate(130%);
+  box-shadow:
+    0 6px 18px rgba(17, 18, 26, 0.22),
+    inset 0 1px 0 rgba(237, 242, 244, 0.12);
+}
+
 .footer__grid {
   display: grid;
-  gap: 2.5rem;
-  padding-bottom: 2.5rem;
+  gap: 1rem;
+  padding-bottom: 2rem;
 }
 
 .footer__brand {
@@ -1010,9 +1163,18 @@ select.field__control {
   justify-content: space-between;
   gap: 0.5rem;
   padding-block: 1.25rem;
-  border-top: 1px solid var(--indigo-300);
+  border-top: 1px solid rgba(141, 153, 174, 0.22);
   font-size: var(--fs-xs);
   color: var(--lavender);
+}
+
+/* ---- No backdrop-filter (older Firefox, iOS Safari < 9) ---------------------
+   The blur is the whole point, but the panes must still read as distinct
+   surfaces. Dropping the filter and deepening the tint keeps the separation
+   without relying on a property those engines discard entirely. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .footer__glass { background-color: rgba(17, 18, 26, 0.3); }
+  .footer__card { background-color: rgba(17, 18, 26, 0.22); }
 }
 
 /* --------------------------------------------------------------------------
@@ -1232,10 +1394,36 @@ select.field__control {
   }
   .ticker__track { animation: none; }
   .ticker { overflow-x: auto; }
+
+  /* Footer aurora + glint. The global * rule above only collapses these to
+     0.01ms, which parks them on their `to` keyframe - a permanently displaced
+     pool and a highlight frozen mid-pane. Cancelling outright leaves the
+     pools at their authored positions and the glint parked off-pane at
+     left:-40%, i.e. invisible. The glass itself still reads. */
+  .site-footer__glow,
+  .footer__glass::after { animation: none; }
 }
 
 @media print {
   .site-header, .nav, .hero__actions, .map, .form, .footer__social { display: none; }
   body { background: none; color: #000; }
   .site-footer { background: none; color: #000; }
+
+  /* The glass cannot work on paper: no backdrop to blur, and the tinted
+     panes would print as grey boxes on white. Drop the aurora and the glint,
+     flatten both pane levels back to plain rules. */
+  .site-footer__glow,
+  .footer__glass::after { display: none; }
+  .footer__glass,
+  .footer__card {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: transparent;
+    box-shadow: none;
+  }
+  .footer__glass { padding-inline: 0; }
+  .footer__card { padding-inline: 0; border: 0; }
+  /* currentColor, not a hex: the print block already recolours the footer to
+     #000, so the rule follows whatever that resolves to. */
+  .footer__bar { border-top-color: currentColor; }
 }
