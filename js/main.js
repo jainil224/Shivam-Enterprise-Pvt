@@ -124,8 +124,9 @@
         "<li><span>" + addr + "</span></li>";
     }
 
-    /* Social icons live in their own row. They stay hidden until a real URL
-       is supplied, so the site never ships a dead link. */
+    /* Social icons live in their own row, at the end of the footer's lead
+       card. They stay hidden until a real URL is supplied, so the site never
+       ships a dead link. */
     var socialRow = document.querySelector(".footer__social");
     if (socialRow) {
       var s = k.social || {};

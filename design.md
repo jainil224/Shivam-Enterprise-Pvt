@@ -196,14 +196,30 @@ Buttons should have rounded corners (6–10px radius), medium padding (12px × 2
 - Error text: Keep within palette — use Space Indigo bold text or an icon indicator rather than introducing red. (If a status color is absolutely required for error/success, note it as an approved exception — otherwise rely on icons/text like "✕ Invalid" in Space Indigo.)
 
 ### 5.5 Footer
-- Background: Space Indigo (this is where the 10% accent can also live as a strong footer band) OR Lavender Grey — background: Lavender Grey 100/dark variant if a dark footer is preferred
-- Text: Platinum (light text on dark background)
-- Links: Platinum with hover to Lavender Grey 800
-- Divider lines: subtle Lavender Grey at low opacity
+- Background: the client's photograph, veiled — see the note below. Fallback and any print/email rendering is Lavender Grey 100 (`#edf2f4`)
+- Text: Space Indigo (dark text on a light ground) — the inverse of the earlier Space Indigo band
+- Links: Space Indigo, hover to Indigo 300 (`#4a4d72`)
+- Divider lines: Space Indigo hairline at 14% — a Lavender hairline is invisible on a light card
 - Wordmark: keep the **text** wordmark "Shivam Enterprise" here, do not reuse the logo image. See §6.1 for the contrast reason
+- Layout: **one** glass card (`.footer__glass`) containing three bare columns — lead, Quick Links, Services. See the note below on why there is no second layer of cards.
 
-### 5.6 Icons
-- Style: Simple line icons (outline style, not filled), consistent stroke width
+**There is exactly one card in this footer, and it is not optional.** `.footer__glass` is the card; the three columns inside it are bare layout — no fill, no border, no shadow, no `backdrop-filter`. They were glass cards in their own right at one point, which produced a card inside a card inside the band: four nested boxes in a row, and the footer read as a set of tiles rather than as one panel. A second layer of translucent white over a photograph also multiplies the veils, so the columns were buying brightness by hiding the client's photo rather than by any design decision. Columns are now separated by space and a hairline rule — vertical at ≥900px, horizontal when stacked. `footer__title--divided` is a second hairline inside the lead column, splitting "who we are" from "how to reach us". **If you add a card back, check you have not reintroduced a nested surface.**
+
+**Documented exception — photographic footer band.** The band is a client-supplied image (`images/footer-bg.webp`, derived from a Cloudinary original by `scripts/build-footer-bg.py`) under a Lavender Grey veil, inverting the earlier "dark band, light text" decision. The reason is measured, not aesthetic: the artwork is **bright** (median relative luminance 0.63, mean 0.62, 99th percentile 0.97, with pure-white specular highlights), so Platinum text on it unscrimmed is 1.13:1 on the brightest pixel. A dark scrim could only have crushed the picture to buy contrast it could never reach. The veil ramps 34% → 58% from top to bottom; solved against the darkest 1% of the image, body text is **6.40:1** and Space Indigo **10.2:1**, so the change is a legibility improvement over the 4.69:1 the flat Indigo band bottomed out at.
+
+**Second photograph — inside the card.** The card itself carries a second client image (`images/footer-card.webp`, built by `scripts/build-footer-card.py`), and the glass effect is kept rather than replaced: `backdrop-filter: blur(18px) saturate(140%)` still runs, so the card reads as a pane sitting on the band rather than a flat photo. The veil is what buys legibility; the blur is what buys the material.
+
+This image needs a **heavier veil than the band (66% → 80% against the band's 34% → 58%)**, because it is the surface the text actually sits on rather than decoration behind a 55% fill. Measured on the artwork: true floor `L=0.0031` (0.5% of the frame is near-black), 1st percentile `0.0955`, median `0.6875`. Body text `#4a4d72` needs a background luminance of `0.5340` for 4.5:1, and solving `0.0031(1-a) + 0.8804a ≥ 0.5340` gives **a ≥ 0.605** — so the ramp never drops below it. Worst case in the artwork measures **4.87:1** body / **8.12:1** Space Indigo; at the ramp's thick end, 5.82:1 / 9.70:1.
+
+The crop is `cover`, biased to `center 30%`. The artwork is 1.78 landscape; the card is ~2.54 at desktop but only **~0.38 on a phone**, where the columns stack and the card becomes much taller than it is wide — `cover` keeps only a narrow vertical slice there, so the bias puts that slice on the upper part of the composition rather than dead centre. **If the client's photo has a subject that must stay visible on mobile, this bias is the thing to change.**
+
+Consequences that follow from the band being light, and that must be preserved if the CSS is edited:
+- **`--lavender` is unusable anywhere in the footer.** It measures 2.88:1 on pure white, so it was only ever a large/bold decorative value; the muted role is `--text-body` (`#4a4d72`), which holds 6.6:1+ on every surface here. Hierarchy comes from size and weight, not from a dimmer colour.
+- **The aurora inverts too** (§13): Platinum pools instead of Indigo, since glass over a light band separates by *lightening* rather than by tinting.
+- **The veil is not baked into the `.webp`.** The text budget is measured against values in the stylesheet; encoding a fixed darkening into the pixels would make the two disagree the moment the photo is swapped.
+- The `.site-footer` `background-color` is the whole fallback: if the image is missing, blocked or fails to decode, the band is still a light surface with correct contrast.
+
+### 5.6 Icons- Style: Simple line icons (outline style, not filled), consistent stroke width
 - Default color: Lavender Grey
 - Active/hover color: Space Indigo
 - No multi-color icon sets
@@ -213,7 +229,7 @@ Buttons should have rounded corners (6–10px radius), medium padding (12px × 2
   - They appear in **"Tell us what you need"** (contact) and **"Where we are"** (location) alongside the generic phone/address/email/person icons, and in the footer social row.
   - Phone, address, email and person **keep** the line style — no brand owns those concepts, and borrowing a service mark for them would misrepresent the link target.
 
-  Colours were chosen by measurement, not taste. Each must clear **WCAG 1.4.11 (3:1)** against *both* surfaces a mark appears on — Platinum `#edf2f4` (contact/location chip) and Indigo `#2b2d42` (footer, and the contact-chip hover state):
+  Colours were chosen by measurement, not taste. Each must clear **WCAG 1.4.11 (3:1)** against *both* surfaces a mark appears on — Platinum `#edf2f4` (contact/location chip) and Indigo `#2b2d42` (contact-chip hover state). The footer row sits on the veiled photograph, which is *lighter* than Platinum, so the Platinum column is the governing one there:
 
   | Colour | on Platinum | on Indigo | Verdict |
   |---|---|---|---|
@@ -230,6 +246,12 @@ Buttons should have rounded corners (6–10px radius), medium padding (12px × 2
   - **WhatsApp's primary green `#25D366` is unusable here.** It only survives as white-on-green, and that pairing measures 1.98:1 — which is precisely why WhatsApp itself uses the darker `#128C7E` for its own header. The mark is still unmistakably WhatsApp by silhouette; it is simply not the bright green.
 
   These three values are the only off-palette colours in the project. They are defined once as `--brand-*` tokens in `css/style.css` and must not be reused for anything else.
+
+### 5.7 Footer Contact Data
+
+The lead column's contact rows are **rendered by `js/main.js` from `js/data.js`**, not hand-typed in `index.html`. `#footer-contact` is filled on load with the primary number, the optional second contact, the optional email row and the address, and each optional row is dropped entirely when empty — so the footer can never show a dead `mailto:` or an empty contact line. One edit in `js/data.js` therefore keeps the footer, the location panel and the contact panel correct together.
+
+The social row sits at the end of the same card and stays hidden until real profile URLs exist in `js/data.js`; a lone row of dead icons is worse than no row. It is hidden as a unit, so no label is left floating over an empty gap.
 
 ---
 

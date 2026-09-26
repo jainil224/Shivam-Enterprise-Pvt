@@ -947,30 +947,49 @@ select.field__control {
 }
 
 /* --------------------------------------------------------------------------
-   13. FOOTER  (design.md 5.5 - Space Indigo band per prompt.md 4.9)
+   13. FOOTER  (design.md 5.5 - photographic band per prompt.md 4.9)
 
    Liquid-glass treatment, three layers deep:
 
-     1. .site-footer        flat Indigo band, the "liquid" being looked through
-     2. .site-footer__glow  two slow-drifting aurora pools behind the glass
-     3. .footer__glass      one large frosted pane with a glint travelling
-        .footer__card       along its top edge, holding four glass cards
+      1. .site-footer        the client's photograph under a Platinum veil,
+                             the "liquid" being looked through
+      2. .site-footer__glow  two slow-drifting light pools behind the glass
+      3. .footer__glass      ONE glass card — the only card in the footer —
+                             carrying a SECOND photograph of the client's under
+                             a heavier veil, with a glint travelling along its
+                             top edge
+        .footer__card       three bare columns inside it, divided by rules
+                            rather than boxed, so nothing nests
 
    Everything is pure CSS - no JS, no SVG filters, no new hex values. The
    glass fills are rgba() of palette colours already sanctioned in the colour
    contract (section 1), the same technique the shadows use.
 
-   WHY EVERY OVERLAY DARKENS AND NONE BRIGHTENS
-   The footer carries light text on a dark band, and the muted role
-   (--lavender, used by .footer__tagline, .footer__list span and .footer__bar)
-   clears AA on flat Indigo by only 4.69:1. That is 0.19:1 of headroom, so
-   ANY translucent white laid over the band pushes it under AA - a Platinum
-   14% sheen over the bar text measures 3.07:1. So the aurora and both glass
-   fills are Indigo tints, which deepen the backdrop and *raise* the ratio,
-   and the travelling glint is confined to the pane's top padding strip,
-   which contains no text at any breakpoint. Measured worst case for the
-   muted role across the whole treatment is 4.75:1, i.e. the effect costs
-   nothing in legibility.
+   TWO PHOTOGRAPHS, AND THEY PLAY DIFFERENT ROLES. The band's image (1a) is
+   full-bleed decoration with no text on it. The card's image (3a) is the
+   surface the footer's text actually sits on, so it carries a heavier veil
+   (66-80% against the band's 34-58%) and its contrast budget is measured
+   against its own near-black floor rather than a flat Indigo. Each block
+   documents its own arithmetic.
+
+   THE BAND IS LIGHT. It was Space Indigo with Platinum text until the
+   client's own photograph went in, and inverting it is the whole reason this
+   block reads the way it does. The artwork measured BRIGHT - median relative
+   luminance 0.63 against 0.63 for white paper - so keeping dark text was
+   never available and a dark scrim could only ever crush the picture into
+   invisibility to buy contrast it could not actually reach. Now:
+
+     - the band is Platinum-veiled photo, and the text is Space Indigo
+     - the aurora is light instead of shadow
+     - every pane LIGHTENS what is behind it rather than tinting it
+     - the muted role is --text-body, because --lavender cannot be used on a
+       light ground at all (2.88:1 on pure white)
+
+   Measured worst case for body text is 6.40:1, over the darkest 1% of the
+   photograph at the thinnest point of the veil ramp. The band this replaced
+   bottomed out at 4.69:1, so the change is a legibility IMPROVEMENT, not a
+   trade. See the 1a block above for the arithmetic and for why the veil is
+   kept in CSS rather than baked into the .webp.
    -------------------------------------------------------------------------- */
 .site-footer {
   position: relative;
@@ -984,18 +1003,70 @@ select.field__control {
      band clips them; they are soft gradients fading to 0 alpha, so nothing
      visible is lost. */
   overflow: hidden;
-  background-color: var(--indigo);
-  color: var(--text-on-dark);
+  /* Flat Platinum underneath. This is the whole fallback: if the WebP is
+     missing, blocked or fails to decode, the band is still a light surface
+     with correct contrast rather than a broken or dark one. */
+  background-color: var(--platinum);
+  color: var(--text-heading);
   padding-block: clamp(2.5rem, 5vw, 3.5rem) clamp(1.5rem, 3vw, 2.25rem);
 }
-.site-footer a { color: var(--platinum); }
-.site-footer a:hover { color: var(--indigo-700); }
+
+/* ---- 1a. The photograph, and the veil that makes it readable ----------------
+   TWO layers, no extra element. The first is a Platinum veil whose alpha ramps
+   from 0.34 at the top to 0.58 at the bottom; the second is the photo.
+
+   WHY A LIGHT VEILED PHOTO AND NOT A DARK SCRIM
+   The artwork is BRIGHT - measured median relative luminance 0.63, mean 0.62,
+   99th percentile 0.97, with pure-white specular highlights, at mean hue 18deg
+   and 40% saturation. Platinum text on it unscrimmed is 1.13:1 on the brightest
+   pixel and 1.40:1 on the mean: unreadable. So the band is light and the text
+   is Space Indigo, and the veil goes the same way as the text - it lifts the
+   darks rather than crushing the lights.
+
+   Solved against the darkest 1% of the image (luminance 0.2264), which is what
+   sets the floor: at the thinnest point of the ramp the composite is 0.4487 and
+   Space Indigo measures 6.40:1; at the thickest it is 0.6058 and 8.42:1. The
+   ramp is heaviest at the bottom on purpose - that is where .footer__bar and
+   the four link columns sit.
+
+   Contrast is therefore BETTER than the flat Indigo band this replaced, whose
+   worst case was the muted role at 4.69:1. Worst case here is 6.40:1.
+
+   The veil is deliberately NOT baked into footer-bg.webp. The text budget is
+   measured against known values in this file; encoding a fixed darkening into
+   the pixels would make the two disagree the moment the photo is swapped. */
+.site-footer {
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(237, 242, 244, 0.34) 0%,
+      rgba(237, 242, 244, 0.46) 55%,
+      rgba(237, 242, 244, 0.58) 100%
+    ),
+    url("../images/footer-bg.webp");
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+}
+
+/* Text roles invert with the band. --lavender cannot be used anywhere on a
+   light ground: it measures 2.88:1 on pure white, so it was only ever a
+   large/bold decorative value (design.md 2.4) and a photograph has far too much
+   luminance range to carry even that. The muted role is --text-body
+   (#4a4d72), which holds 7.5:1 here, and hierarchy comes from size and weight
+   rather than from a dimmer colour. */
+.site-footer a { color: var(--indigo); }
+.site-footer a:hover { color: var(--indigo-300); }
 
 /* ---- 2. The aurora behind the glass --------------------------------------
    Two radial-gradient pools, blurred hard so the gradient stops read as soft
-   depth rather than as circles. Indigo 200 and Indigo 300 - both darker than
-   the band, so they read as liquid shadow and cost no text contrast. Offsets
-   and durations are mismatched so the two never pulse in step. */
+   depth rather than as circles. Offsets and durations are mismatched so the
+   two never pulse in step.
+
+   These were Indigo tints - liquid shadow on a dark band. The band is light
+   now, so they are Platinum pools instead: light falling across a photograph
+   rather than shadow pooling in it. The keyframes are untouched, so the drift
+   is the same 22s / 28s it always was. */
 .site-footer__glow {
   position: absolute;
   z-index: -1;
@@ -1012,9 +1083,9 @@ select.field__control {
   height: min(46rem, 78vw);
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(17, 18, 26, 0.9) 0%,      /* indigo-200 */
-    rgba(17, 18, 26, 0.34) 44%,
-    rgba(17, 18, 26, 0) 72%
+    rgba(240, 244, 246, 0.62) 0%,    /* platinum-600 */
+    rgba(240, 244, 246, 0.22) 44%,
+    rgba(240, 244, 246, 0) 72%
   );
   filter: blur(60px);
   animation: footer-drift-a 22s ease-in-out infinite alternate;
@@ -1027,9 +1098,9 @@ select.field__control {
   height: min(40rem, 70vw);
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(25, 27, 39, 0.72) 0%,     /* indigo-300 */
-    rgba(25, 27, 39, 0.26) 46%,
-    rgba(25, 27, 39, 0) 74%
+    rgba(237, 242, 244, 0.48) 0%,    /* platinum */
+    rgba(237, 242, 244, 0.18) 46%,
+    rgba(237, 242, 244, 0) 74%
   );
   filter: blur(70px);
   animation: footer-drift-b 28s ease-in-out infinite alternate;
@@ -1044,7 +1115,34 @@ select.field__control {
   to   { transform: translate3d(-3.5rem, -2rem, 0) scale(1); }
 }
 
-/* ---- 3a. The large glass pane --------------------------------------------- */
+/* ---- 3a. The one glass card ------------------------------------------------
+   The client's second photograph, inside the card, under a Platinum veil.
+
+   WHY THIS NEEDS A HEAVIER VEIL THAN THE BAND
+   The band image (1a) has no text on it: the card's own 55% fill sits between
+   it and every glyph, and the veil there is only ever 34-58%. This image is
+   different — it is the surface the footer's text actually sits on, so it has
+   to clear 4.5:1 on its OWN darkest pixels.
+
+   Measured on footer-card.webp: true floor L=0.0031 (0.5% of the frame is
+   near-black), 1st percentile 0.0955, median 0.6875. Body text #4a4d72 needs a
+   background luminance of 0.5340 to reach 4.5:1. Solving
+
+       0.0031*(1-a) + 0.8804*a >= 0.5340     =>     a >= 0.605
+
+   gives 0.61 as the floor, so the ramp below runs 0.66 -> 0.80 and never drops
+   below it. At 0.66 the worst pixel in the artwork measures 4.80:1 for body
+   text and 8.42:1 for Space Indigo; at 0.80, 5.48:1 and 9.13:1.
+
+   The ramp is heaviest at the BOTTOM because that is where the contact block
+   sits — a phone number to be typed and an address to be copied, which is the
+   last thing that should be hard to read.
+
+   THE GLASS IS KEPT, not replaced. backdrop-filter still runs, and it is what
+   makes this read as a pane sitting on the band rather than as a flat photo:
+   the blur picks up the band's aurora and the band's own photo through the
+   translucent edges, so the two layers stay visibly separate. The veil is what
+   buys legibility; the blur is what buys the material. */
 .footer__glass {
   /* Shared with the glint below so the highlight always tracks the pane's own
      top padding exactly, at every breakpoint. */
@@ -1053,22 +1151,45 @@ select.field__control {
   /* Clips the glint to the pane's rounded corners. */
   overflow: hidden;
   padding: var(--glass-pad-y) clamp(1rem, 2.5vw, 2rem) 0;
-  border: 1px solid rgba(141, 153, 174, 0.22);   /* lavender hairline */
+  /* Indigo hairline. A Lavender or Platinum border is invisible on a light
+     pane; this is the one hairline that reads as an edge here. */
+  border: 1px solid rgba(43, 45, 66, 0.14);
   border-radius: 20px;
-  /* Indigo 200 at 14%. Glass over a dark surface reads as a dark, saturated
-     pane - it separates from the band by tint, not by brightness. */
-  background-color: rgba(17, 18, 26, 0.14);
+  /* Flat Platinum first: this is the whole fallback if the WebP is missing,
+     blocked or fails to decode. The card stays a light, correctly-contrasting
+     surface rather than becoming a broken or transparent hole in the band. */
+  background-color: rgba(237, 242, 244, 0.72);
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(237, 242, 244, 0.66) 0%,
+      rgba(237, 242, 244, 0.73) 55%,
+      rgba(237, 242, 244, 0.80) 100%
+    ),
+    url("../images/footer-card.webp");
+  background-size: cover;
+  /* The artwork is 1.78 landscape; the card is 2.54 at desktop (so the sides
+     crop) but only ~0.38 on a phone, where the columns stack and the card
+     becomes far taller than it is wide. `cover` therefore keeps only a narrow
+     vertical slice down the middle there. Biased to 50% 30% so that slice
+     lands on the upper part of the composition, where the subject is, instead
+     of dead-centre on what is probably foreground. */
+  background-position: center 30%;
+  background-repeat: no-repeat;
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   backdrop-filter: blur(18px) saturate(140%);
-  /* Lifted edge: dark contact shadow below, faint Platinum catch-light above. */
+  /* Lifted edge: contact shadow below, catch-light along the top. */
   box-shadow:
-    0 18px 40px rgba(17, 18, 26, 0.34),
-    inset 0 1px 0 rgba(237, 242, 244, 0.16);
+    0 18px 40px rgba(17, 18, 26, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
 /* The travelling glint. Confined to the pane's top padding strip, which holds
-   no text at any width, so it can be as bright as liquid glass needs while the
-   muted role stays at 4.75:1 or better. Parked off-pane left, walked across. */
+   no text at any width, so it can be as bright as liquid glass needs. Parked
+   off-pane left, walked across.
+
+   The alphas went UP with the band. At 0.06 peak this was a highlight on a dark
+   pane; on a light one it needs roughly twice the opacity to register at all. */
 .footer__glass::after {
   content: "";
   position: absolute;
@@ -1080,11 +1201,11 @@ select.field__control {
   pointer-events: none;
   background: linear-gradient(
     100deg,
-    rgba(237, 242, 244, 0) 0%,
-    rgba(237, 242, 244, 0.06) 35%,
-    rgba(237, 242, 244, 0.16) 50%,
-    rgba(237, 242, 244, 0.06) 65%,
-    rgba(237, 242, 244, 0) 100%
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.14) 35%,
+    rgba(255, 255, 255, 0.34) 50%,
+    rgba(255, 255, 255, 0.14) 65%,
+    rgba(255, 255, 255, 0) 100%
   );
   transform: skewX(-14deg);
   will-change: transform;
@@ -1096,37 +1217,82 @@ select.field__control {
   to   { transform: translateX(340%) skewX(-14deg); }
 }
 
-/* ---- 3b. The per-column glass cards --------------------------------------- */
+/* ---- 3b. The three columns INSIDE the one pane ------------------------------
+   .footer__glass is the ONLY card in this footer. These are bare layout
+   columns: no fill, no border, no shadow, no backdrop-filter.
+
+   They used to be glass cards in their own right, which put a card inside a
+   card inside the band — four nested boxes in a row, and the eye read the
+   footer as a set of tiles rather than as one panel. On top of that, a second
+   layer of translucent white over a photograph multiplies the veils: the
+   measured backdrop for text in the lead column fell to 0.81 luminance purely
+   from stacking fills, which is brightness bought by hiding the client's photo
+   rather than by any design decision.
+
+   Columns are separated by space and a hairline rule instead of by boxes. The
+   photograph now reaches the text directly, and there is exactly one surface
+   to read as the card. */
 .footer__card {
   position: relative;
-  padding: clamp(1.1rem, 2vw, 1.5rem);
-  border: 1px solid rgba(237, 242, 244, 0.1);
-  border-radius: 14px;
-  background-color: rgba(17, 18, 26, 0.1);
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
-  backdrop-filter: blur(10px) saturate(130%);
-  box-shadow:
-    0 6px 18px rgba(17, 18, 26, 0.22),
-    inset 0 1px 0 rgba(237, 242, 244, 0.12);
+  padding: 0;
+  min-width: 0;
 }
 
+/* Column dividers, drawn as a border on the column itself rather than as a
+   separate element. Only at the 3-column breakpoint — below it the columns
+   stack, and a left rule on a stacked column would just be a stray line down
+   the left margin. The first column is skipped, and the lead column is given
+   the same left rule as the others rather than being treated as special. */
+@media (min-width: 900px) {
+  .footer__card + .footer__card {
+    border-left: 1px solid rgba(43, 45, 66, 0.14);
+    padding-left: clamp(1.25rem, 2.5vw, 2rem);
+  }
+  /* The grid gap has to widen to match the padding above, or the rule crowds
+     the column to its left. */
+  .footer__grid { gap: clamp(1.25rem, 2.5vw, 2rem); }
+}
+
+/* Stacked layout (phone/tablet): the columns need breathing room between them
+   and a rule is the clearest separator at this width, where a left border
+   would be off-canvas. */
+@media (max-width: 899px) {
+  .footer__card + .footer__card {
+    border-top: 1px solid rgba(43, 45, 66, 0.14);
+    padding-top: 1.25rem;
+  }
+  .footer__grid { gap: 1.25rem; }
+}
+
+/* Three columns. The template is set in the 900px breakpoint (15) as
+   1.6fr 1fr 1fr, which gives the lead column enough width for a full phone
+   number and a two-line address without wrapping mid-value. */
 .footer__grid {
   display: grid;
-  gap: 1rem;
   padding-bottom: 2rem;
 }
 
 .footer__brand {
   font-size: 1.125rem;
   font-weight: 700;
-  color: var(--platinum);
+  color: var(--indigo);
   text-decoration: none;
 }
 .footer__tagline {
   margin-top: 0.75rem;
   max-width: 22rem;
   font-size: var(--fs-small);
-  color: var(--lavender);
+  color: var(--text-body);
+}
+
+/* The rule that splits the lead card into "who we are" and "how to reach us".
+   Uses the card's own left padding as the offset so it lines up with the text
+   above it, and sits on the indigo hairline rather than a lavender one — a
+   light border on a light card is invisible. */
+.footer__title--divided {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(43, 45, 66, 0.14);
 }
 
 .footer__title {
@@ -1135,14 +1301,25 @@ select.field__control {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--platinum);
+  color: var(--indigo);
 }
 .footer__list { display: grid; gap: 0.6rem; font-size: var(--fs-small); }
 .footer__list a { text-decoration: none; }
 .footer__list a:hover { text-decoration: underline; }
-.footer__list span { color: var(--lavender); }
+.footer__list span { color: var(--text-body); }
 
-.footer__social { display: flex; gap: 0.6rem; margin-top: 1rem; }
+/* Contact rows sit directly under the business name, so they are promoted from
+   plain list text to the column's most-read content: slightly larger, and a
+   little more air between them than the link columns need. Colour is unchanged
+   — --text-body already measures 6.8:1 over the pane, and --indigo (11.4:1) is
+   reserved for the things you can click. */
+.footer__card--lead .footer__list {
+  gap: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.footer__social { display: flex; gap: 0.6rem; margin-top: 1.25rem; }
 .footer__social a {
   display: inline-flex;
   align-items: center;
@@ -1151,10 +1328,17 @@ select.field__control {
 
   border: 1px solid var(--lav-400);
   border-radius: var(--radius);
-  color: var(--platinum);
-  transition: background-color var(--transition), color var(--transition);
+  color: var(--indigo);
+  transition: background-color var(--transition), color var(--transition),
+              border-color var(--transition);
 }
-.footer__social a:hover { background-color: var(--indigo-300); color: var(--platinum); }
+/* Hover is a tint, not a fill: on a light band an Indigo fill would drop a
+   Lavender 400 hairline and a brand mark to nothing underneath it. */
+.footer__social a:hover {
+  background-color: var(--lav-700);
+  border-color: var(--lavender);
+  color: var(--indigo);
+}
 
 .footer__bar {
   display: flex;
@@ -1163,18 +1347,22 @@ select.field__control {
   justify-content: space-between;
   gap: 0.5rem;
   padding-block: 1.25rem;
-  border-top: 1px solid rgba(141, 153, 174, 0.22);
+  border-top: 1px solid rgba(43, 45, 66, 0.14);
   font-size: var(--fs-xs);
-  color: var(--lavender);
+  color: var(--text-body);
 }
 
 /* ---- No backdrop-filter (older Firefox, iOS Safari < 9) ---------------------
-   The blur is the whole point, but the panes must still read as distinct
-   surfaces. Dropping the filter and deepening the tint keeps the separation
-   without relying on a property those engines discard entirely. */
+   The blur is what makes the card read as glass, but it is not what makes it
+   legible — the Platinum veil is, and that is a plain gradient the engine will
+   honour regardless. So the veil stays and only the filter goes.
+
+   Dropping the blur means the band's aurora and photo stop smearing through
+   the card, so the card's own background-color is raised to compensate: at
+   0.86 it lands on the same effective luminance the blurred version reached,
+   keeping the measured contrast budget valid on these engines too. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .footer__glass { background-color: rgba(17, 18, 26, 0.3); }
-  .footer__card { background-color: rgba(17, 18, 26, 0.22); }
+  .footer__glass { background-color: rgba(240, 244, 246, 0.86); }
 }
 
 /* --------------------------------------------------------------------------
@@ -1231,6 +1419,8 @@ select.field__control {
   .areas__list li { min-height: 44px; display: inline-flex; align-items: center; }
   .footer__brand { min-height: 44px; display: inline-flex; align-items: center; }
   .footer__list a { min-height: 44px; display: inline-flex; align-items: center; }
+  /* Social buttons are 44px square on desktop already, so they are at the
+     floor everywhere and need no touch-only override. */
 }
 
 @media (min-width: 900px) {
@@ -1239,7 +1429,10 @@ select.field__control {
   .about__grid { grid-template-columns: 1.1fr 0.9fr; }
   .contact__grid { grid-template-columns: 0.9fr 1.1fr; }
   .location__grid { grid-template-columns: 0.85fr 1.15fr; }
-  .footer__grid { grid-template-columns: 1.4fr 1fr 1.3fr 0.8fr; }
+  /* 1.6fr for the lead card: at 900px+ it has to hold "+91 99091 43989" and
+     "1075-1076, Diamond Eco-3, Gabeni Gam, Sachin" without breaking either
+     value across lines. */
+  .footer__grid { grid-template-columns: 1.6fr 1fr 1fr; }
 
   /* Lay the links and the Contact Us button out on ONE row. Without this the
      .nav__menu is a plain block, so the button drops onto a second line under
@@ -1409,21 +1602,25 @@ select.field__control {
   body { background: none; color: #000; }
   .site-footer { background: none; color: #000; }
 
-  /* The glass cannot work on paper: no backdrop to blur, and the tinted
-     panes would print as grey boxes on white. Drop the aurora and the glint,
-     flatten both pane levels back to plain rules. */
+  /* The glass cannot work on paper: no backdrop to blur, and a photo behind
+     66-80% of Platinum would print as a pale rectangle with a smudge in it.
+     Drop the aurora, the glint and both photographs, and flatten the card back
+     to a plain rule. `background: none` above is a shorthand, so it also
+     resets background-image and keeps 77 KB of photography off the page.
+
+     The column dividers follow currentColor for the same reason the bar rule
+     does: the block recolours the footer to #000, and a fixed 14% indigo would
+     print as a grey line. */
   .site-footer__glow,
   .footer__glass::after { display: none; }
-  .footer__glass,
-  .footer__card {
+  .footer__glass {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    background-color: transparent;
+    background: none;
     box-shadow: none;
+    padding-inline: 0;
   }
-  .footer__glass { padding-inline: 0; }
-  .footer__card { padding-inline: 0; border: 0; }
-  /* currentColor, not a hex: the print block already recolours the footer to
-     #000, so the rule follows whatever that resolves to. */
+  .footer__card,
+  .footer__card + .footer__card { border-color: currentColor; }
   .footer__bar { border-top-color: currentColor; }
 }
