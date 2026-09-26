@@ -1016,24 +1016,6 @@ select.field__control {
 }
 
 /* --------------------------------------------------------------------------
-   14. REVEAL ON SCROLL
-   -------------------------------------------------------------------------- */
-.reveal {
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 500ms ease, transform 500ms ease;
-  /* Only opacity and transform are animated — both are compositor-only, so
-     revealing a card never triggers layout or paint of its contents. */
-  will-change: opacity, transform;
-}
-.reveal.is-in {
-  opacity: 1;
-  transform: none;
-  /* Hand the layer back once the animation is done. Leaving `will-change` set
-     on ~27 elements permanently holds that much GPU memory for nothing. */
-  will-change: auto;
-}
-/* --------------------------------------------------------------------------
    15. RESPONSIVE  (mobile-first: base = phone, 768 = tablet, 1024 = desktop)
    -------------------------------------------------------------------------- */
 @media (min-width: 480px) {

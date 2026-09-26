@@ -74,15 +74,22 @@
       : "";
 
     var person = k.person && k.person.name ? k.person : null;
-    var personRow = person && person.phone
-      ? contactItem("i-user", person.role ? person.role : "Contact", '<a class="contact-item__value" href="tel:' +
-          esc(person.phoneTel || person.phone) + '">' + esc(person.name) + " &middot; " + esc(person.phone) + "</a>")
-      : "";
 
     var waGreeting = "Hello " + name + ", I would like to know more about your yarn supply and services.";
     var waRow = contactItem("i-whatsapp", "WhatsApp",
       '<a class="contact-item__value" href="' + waLink(waGreeting) +
       '" target="_blank" rel="noopener">Chat on WhatsApp</a>');
+
+    var primaryWaUrl = waLink(waGreeting, k.whatsapp || k.phoneTel);
+    var personWaUrl = person && person.phone
+      ? waLink("Hello " + person.name + ", I would like to enquire about yarn from Shivam Enterprise.", person.phoneTel || person.phone)
+      : "";
+
+    var personRow = person && person.phone
+      ? contactItem("i-user", person.role ? person.role : "Contact", '<a class="contact-item__value" href="' +
+          esc(personWaUrl) + '" target="_blank" rel="noopener" title="Chat on WhatsApp with ' + esc(person.name) + '">' +
+          esc(person.name) + " &middot; " + esc(person.phone) + "</a>")
+      : "";
 
     var rows =
       contactItem("i-pin", "Address",
@@ -108,10 +115,10 @@
     var foot = $("#footer-contact");
     if (foot) {
       foot.innerHTML =
-        "<li><a href='tel:" + esc(k.phoneTel) + "'>" + esc(k.phoneDisplay) + "</a></li>" +
+        "<li><a href='" + esc(primaryWaUrl) + "' target='_blank' rel='noopener' title='Chat on WhatsApp (" + esc(k.phoneDisplay) + ")'>" + esc(k.phoneDisplay) + "</a></li>" +
         (k.email ? "<li><a href='mailto:" + esc(k.email) + "'>" + esc(k.email) + "</a></li>" : "") +
         (person && person.phone
-          ? "<li><a href='tel:" + esc(person.phoneTel || person.phone) + "'>" +
+          ? "<li><a href='" + esc(personWaUrl) + "' target='_blank' rel='noopener' title='Chat on WhatsApp with " + esc(person.name) + " (" + esc(person.phone) + ")'>" +
             esc(person.name) + " &middot; " + esc(person.phone) + "</a></li>"
           : "") +
         "<li><span>" + addr + "</span></li>";
@@ -176,9 +183,11 @@
   /* ======================================================================
      WHATSAPP LINK BUILDER
      ====================================================================== */
-  function waLink(message) {
-    var num = (SITE && SITE.contact.whatsapp) || "";
-    return "https://wa.me/" + num + "?text=" + encodeURIComponent(message);
+  function waLink(message, customNum) {
+    var raw = customNum || ((SITE && SITE.contact.whatsapp) || "");
+    var digitsOnly = String(raw).replace(/\D/g, "");
+    var num = digitsOnly.length === 10 ? ("91" + digitsOnly) : digitsOnly;
+    return "https://wa.me/" + num + (message ? "?text=" + encodeURIComponent(message) : "");
   }
 
   /* ======================================================================
