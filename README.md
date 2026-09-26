@@ -210,7 +210,11 @@ images/logo.webp        navbar logo 1x (39x48)  <- the live logo
 images/logo.png         navbar logo 1x fallback
 images/logo-2x.*        2x (78x96)
 images/logo-3x.*        3x (117x144)
-images/favicon.svg      tab icon (S monogram, 930-byte on-palette vector)
+images/favicon.svg      tab icon, primary (64x64 raster in svg, 11 KB)
+images/favicon-16.png   tab icon, small (943 B)
+images/favicon-32.png   tab icon (2.9 KB)
+images/favicon-180.png  apple-touch-icon (40 KB)
+images/favicon-lockup.*  alternative crop, generated but not referenced
 scripts/build-logo-assets.py   regenerates the 6 logo derivatives from source
 design.md               the visual design system (source of truth)
 prompt.md               the build brief (source of truth)
@@ -220,11 +224,13 @@ prompt.md               the build brief (source of truth)
 
 The navbar shows the logo image at 48px tall; there is no text wordmark beside it. A visitor downloads one derivative via `<picture>` (WebP, PNG fallback, `2x`/`3x` `srcset`) — about 2–27 KB. The source artwork is 1.33 MB, so **never point the page at the source file directly**; that mistake put 1.33 MB in the header of every page load and was the main reason the site felt slow.
 
-`images/Sivam_Enterprise_Logo_Transparent.svg` is **not** a vector, despite the extension — it is a 1.85 MB raster wrapped in an `<svg>` tag with zero `<path>` elements. Do not use it as a favicon; browsers will fetch the whole 1.85 MB.
+`images/Sivam_Enterprise_Logo_Transparent.svg` is **not** a vector, despite the extension — it is a 1.85 MB raster wrapped in an `<svg>` tag with zero `<path>` elements. **It is the favicon source**, but never point `<link rel="icon">` straight at it: a browser tab would fetch the whole 1.85 MB to paint a 16 px glyph. `scripts/build-favicon.py` unpacks the embedded 941×1672 PNG and emits real sizes (`favicon.svg`, `-16`, `-32`, `-180`; ≈60 KB total, one per tab).
+
+Two things to know about that artwork: it is **greyscale** (`#000000` ink, no hue — the navy/gold in `design.md` §6.1 belongs to the *navbar* source, a different file), and it is **portrait** (ink aspect 0.736), so it has to be cropped square to be legible at tab size. The emblem/wordmark boundary is a judgement call — the two form one continuous mass with no empty seam — so `SPLIT` at the top of the build script is the knob to turn if the wrong region is chosen. `logo-check.html` shows both candidate crops at 16/32/64/180 px.
 
 The artwork is a **portrait** mark (aspect ≈0.81), not a wide wordmark, so it renders as a ~39px wide mark beside the nav links. A horizontal lockup would need to come from the designer. Print, embroidery and signage need a true outlined vector — do not upscale the derivatives.
 
-See `design.md` §6.1 for the full asset spec. Regenerate with `python scripts/build-logo-assets.py` (needs Pillow); output is deterministic.
+See `design.md` §6.1 for the full asset spec. Regenerate with `python scripts/build-logo-assets.py` and `python scripts/build-favicon.py` (needs Pillow); output is deterministic.
 
 Open `logo-check.html` in a browser to review the logo and favicon at real sizes. It is a review page, not part of the site; delete it once you are happy.
 
@@ -269,8 +275,28 @@ Plus the two text shades sanctioned in `design.md` §2.4: `#4a4d72` (body) and
 asset and carries its own near-black navy (`#081929`) and gold/tan
 (`#a08060`–`#c0a080`). It is exempt from the table above and may not be
 recoloured. Because it is raster, those hex values appear in no stylesheet — the
-contract still holds for all CSS. See `design.md` §6.1. The favicon is *not* an
-exception: it uses `--indigo` on `--platinum`.
+contract still holds for all CSS. See `design.md` §6.1. The **favicon is now a
+second palette-exempt raster**: it is built from
+`images/Sivam_Enterprise_Logo_Transparent.svg`, which is greyscale, and
+likewise contributes no hex value to any stylesheet.
+
+**Second standing exception, the three service marks.** WhatsApp, Instagram and
+Facebook are rendered as their official filled brand marks, not as house-drawn
+line icons. They add exactly three off-palette values, as `--brand-*` tokens:
+
+| Token | Hex | Contrast note |
+|---|---|---|
+| `--brand-whatsapp` | `#128c7e` | official WhatsApp UI teal; 3.66 on Platinum, 3.26 on Indigo |
+| `--brand-facebook` | `#1877f2` | official Facebook blue; 3.75 on Platinum, 3.19 on Indigo |
+| `--brand-instagram` | `#e4405f` | official Instagram pink; 3.58 on Platinum, 3.34 on Indigo |
+
+Each clears WCAG 1.4.11 (3:1) against both surfaces the marks sit on. Two
+official alternatives were **rejected on measurement**: WhatsApp's primary green
+`#25D366` gives only 1.76:1 on Platinum, and the Instagram gradient fails in
+both directions (orange 2.25 on Platinum, purple 1.96 on Indigo) — which is why
+the Instagram mark is single-colour. The values may be used for these three
+marks and nothing else. Rationale, full table and licence provenance:
+`design.md` §5.6.
 
 **Measured coverage at 1440 px** is **69.4% Platinum family / 22.6% Lavender
 family / 8.0% Indigo family**. The Lavender Grey band carries the stats strip,

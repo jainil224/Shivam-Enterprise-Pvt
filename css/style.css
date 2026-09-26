@@ -25,6 +25,20 @@
   --lav-700: #bbc2cf;       /* decorative hairline dividers */
   --lav-900: #e8ebef;       /* disabled button fill */
   --plat-600: #f0f4f6;      /* card background */
+
+  /* Brand marks - the only off-palette values in the project, and the only
+     non-core colours allowed outside interactive states. Documented exception
+     in design.md 5.6. Each clears WCAG 1.4.11 (3:1) against BOTH surfaces
+     the marks appear on, Platinum and Indigo:
+       WhatsApp  #128C7E -> 3.66 on Platinum, 3.26 on Indigo
+       Facebook  #1877F2 -> 3.75 on Platinum, 3.19 on Indigo
+       Instagram #E4405F -> 3.58 on Platinum, 3.34 on Indigo
+     Rejected: WhatsApp green #25D366 (1.76 on Platinum) and the Instagram
+     gradient, whose orange end gives 2.25 on Platinum and purple end 1.96 on
+     Indigo. All three are official brand colours, not invented shades. */
+  --brand-whatsapp: #128c7e;
+  --brand-facebook: #1877f2;
+  --brand-instagram: #e4405f;
   --plat-700: #f4f7f8;      /* alternate section background */
   --plat-400: #b1c6cf;      /* hairline on light background */
 
@@ -259,6 +273,19 @@ h3 { font-size: var(--fs-h3); font-weight: 600; }
   flex: none;
 }
 .icon--lg { width: 2rem; height: 2rem; }
+
+/* Brand marks (WhatsApp / Instagram / Facebook) are filled official geometry,
+   not stroked outlines. Both declarations are REQUIRED: without
+   fill:currentColor the mark renders as a hollow outline, and without
+   stroke:none the closed paths get a 1.5px stroke that fattens the geometry. */
+.icon--brand {
+  fill: currentColor;
+  stroke: none;
+  stroke-width: 0;
+}
+.icon--whatsapp { color: var(--brand-whatsapp); }
+.icon--facebook { color: var(--brand-facebook); }
+.icon--instagram { color: var(--brand-instagram); }
 .icon--muted { color: var(--lav-400); }
 .icon--accent { color: var(--indigo); }
 

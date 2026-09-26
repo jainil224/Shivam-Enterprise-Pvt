@@ -207,6 +207,29 @@ Buttons should have rounded corners (6–10px radius), medium padding (12px × 2
 - Default color: Lavender Grey
 - Active/hover color: Space Indigo
 - No multi-color icon sets
+- **Documented exception — third-party service marks.** WhatsApp, Instagram and Facebook are *brands*, not interface concepts, and are rendered as their official filled marks in official brand colour rather than as house-drawn line icons:
+  - Geometry: Simple Icons (`simpleicons.org`), **CC0-1.0**. No attribution legally required; provenance is noted in `index.html` anyway. The marks remain trademarks of their owners and are used nominatively, only to link to the service concerned.
+  - Rendering: `.icon--brand` sets `fill:currentColor; stroke:none`. Both declarations are load-bearing — the sprite default is `fill:none; stroke:1.5`, so without the override the marks render as hollow, fattened outlines.
+  - They appear in **"Tell us what you need"** (contact) and **"Where we are"** (location) alongside the generic phone/address/email/person icons, and in the footer social row.
+  - Phone, address, email and person **keep** the line style — no brand owns those concepts, and borrowing a service mark for them would misrepresent the link target.
+
+  Colours were chosen by measurement, not taste. Each must clear **WCAG 1.4.11 (3:1)** against *both* surfaces a mark appears on — Platinum `#edf2f4` (contact/location chip) and Indigo `#2b2d42` (footer, and the contact-chip hover state):
+
+  | Colour | on Platinum | on Indigo | Verdict |
+  |---|---|---|---|
+  | WhatsApp `#128C7E` | 3.66 | 3.26 | **used** |
+  | WhatsApp green `#25D366` | **1.76** | 6.80 | rejected — fails on Platinum |
+  | Facebook `#1877F2` | 3.75 | 3.19 | **used** |
+  | Instagram pink `#E4405F` | 3.58 | 3.34 | **used** |
+  | Instagram gradient `#F58529` | **2.25** | 5.31 | rejected |
+  | Instagram gradient `#DD2A7B` | 3.97 | 3.01 | rejected |
+  | Instagram gradient `#8134AF` | 6.11 | **1.96** | rejected |
+
+  Two consequences worth recording:
+  - **The Instagram gradient is not usable at all** — no orientation of it clears both surfaces (orange fails on Platinum, purple fails on Indigo). The flat official Instagram pink `#E4405F` is used instead, which is why the Instagram mark is single-colour.
+  - **WhatsApp's primary green `#25D366` is unusable here.** It only survives as white-on-green, and that pairing measures 1.98:1 — which is precisely why WhatsApp itself uses the darker `#128C7E` for its own header. The mark is still unmistakably WhatsApp by silhouette; it is simply not the bright green.
+
+  These three values are the only off-palette colours in the project. They are defined once as `--brand-*` tokens in `css/style.css` and must not be reused for anything else.
 
 ---
 
@@ -246,17 +269,29 @@ Two earlier files are kept for provenance only and are **never served**:
 | `images/logo.png` | 39×48 | 4,811 | 1x fallback |
 | `images/logo-2x.webp` / `.png` | 78×96 | 5,456 / 14,584 | 2x |
 | `images/logo-3x.webp` / `.png` | 117×144 | 9,500 / 27,280 | 3x |
-| `images/favicon.svg` | 32×32 vector | 930 | tab icon |
+| `images/favicon.svg` | 64×64 raster in `<svg>` | 11,074 | tab icon, primary |
+| `images/favicon-32.png` | 32×32 | 2,872 | tab icon |
+| `images/favicon-16.png` | 16×16 | 943 | tab icon, small |
+| `images/favicon-180.png` | 180×180 | 40,542 | apple-touch-icon |
+| `images/favicon-lockup.*` | 16–180 | 791–31,579 | alternative crop, not referenced |
 
 Served via `<picture>`: a WebP `<source>` plus a PNG `src` carrying the `2x`/`3x` `srcset`. A visitor downloads **one** derivative — 2–27 KB against the 1.33 MB source, a **99.9%** reduction. Referencing the source PNG directly (as an earlier revision did) put 1.33 MB in the header of every page load, which is what made the site feel slow.
 
 **The artwork is portrait, not a wide wordmark.** Ink bounds are 1108×1376, aspect ≈ 0.81, against a display box of 39×48 (aspect 0.8125). The derivatives preserve the whole mark and only trim empty canvas (8px pad). An earlier revision forced it into a 140×48 box with `object-fit: contain`, which letterboxed the mark down to ~39px wide and left ~100px of dead space beside it. The display box now matches the artwork's own aspect. If a horizontal lockup is wanted for the navbar, commission one — do not re-composition the logo in the build.
 
-**Palette exception (approved).** The logo is the client's own artwork and is deliberately exempt from the §2 colour system; as a fixed brand asset it may not be recoloured to fit. It is raster, so its colours appear in no stylesheet and the §2 contract still holds for all CSS.
+**Palette exception (approved).** The logo is the client's own artwork and is deliberately exempt from the §2 colour system; as a fixed brand asset it may not be recoloured to fit. It is raster, so its colours appear in no stylesheet and the §2 contract still holds for all CSS. The navy `#081929` and gold/tan `#a08060`–`#c0a080` quoted above are sampled from the **navbar** source (`ChatGPT Image …png`); the separate favicon source is greyscale — see the Favicon note below.
 
 **Why the footer keeps the text wordmark.** The footer band is Space Indigo `#2b2d42`. A near-black logo on it measured ≈1.25:1 — effectively invisible — and safely lightening a flattened raster is not possible without destroying its gold. The footer therefore keeps the Platinum text wordmark. A designer-supplied vector with a reversed variant would be required to change this.
 
-**Favicon.** `images/favicon.svg` is a hand-drawn `S` monogram — Space Indigo `#2b2d42` on Platinum `#edf2f4`, `stroke-width="3"` in a 32×32 viewBox. It is on-palette and 930 bytes. It is deliberately not the full logo: a detailed portrait mark is an unreadable smudge at 16px, and the real artwork is 1.85 MB as an `.svg`.
+**Favicon — the client's own artwork, not a monogram.** `images/Sivam_Enterprise_Logo_Transparent.svg` is now the favicon source. That filename is misleading: the file is **not a vector**. It is a 1.85 MB `<svg>` wrapper whose entire content is one `<image>` element holding a 941×1672 base64 PNG, and it has **zero `<path>` elements** — so there is no vector to extract, and no way to recolour it in the favicon.
+
+Three consequences, all handled by `scripts/build-favicon.py`:
+
+1. **Never point `<link rel="icon">` at that file.** It would make every browser tab fetch 1.85 MB to paint a 16–32 px glyph. The script unpacks the embedded PNG and emits real sizes instead: 11 KB + 2.9 KB + 943 B + 40 KB ≈ **60 KB total**, and a tab only ever fetches one of them.
+2. **The artwork is portrait, so it must be cropped to a square.** Ink occupies y236–1622 at 923 px wide — aspect 0.736. Dropped into a square tab unsliced it is an unreadable vertical sliver. The emblem/wordmark split is the one judgement call here: the two form **one continuous mass with no empty seam** (row fill runs ~45% through the upper mark, peaks at 87.6% across the wordmark, never returning to zero), so it cannot be detected automatically. `SPLIT = 0.62` in the script is the single knob. Both candidates are rendered side by side in `logo-check.html`; the emblem is currently live and `favicon-lockup.*` is the alternative.
+3. **This artwork is greyscale, not navy-and-gold.** Sampling only fully-opaque pixels gives `#000000` core ink with grey antialiasing (max channel spread 17–18, i.e. no real hue) plus a near-empty 133 px band at y1489–1622. The navy `#081929` and gold/tan `#a08060`–`#c0a080` recorded in §6.1 belong to the *navbar* artwork (`ChatGPT Image …png`), which is a different file. Monochrome is why this one crops so well into a favicon.
+
+It remains a palette-exempt raster (§6.1), so it contributes no hex value to any stylesheet.
 
 **Print / large format limitation.** The logo originates from a ~1124px raster, so it is web-only. Print, embroidery, signage and packaging need a true outlined vector from the designer. Do not upscale `logo-3x.png` for those.
 

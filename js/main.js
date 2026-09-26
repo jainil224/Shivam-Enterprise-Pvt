@@ -33,8 +33,19 @@
   /* ======================================================================
      CONTACT DETAILS — rendered from js/data.js
      ====================================================================== */
+  /* Brand marks are the official, filled service marks rather than house-drawn
+     line icons, so they need .icon--brand (fill:currentColor, stroke:none) plus
+     a per-service colour class. See design.md 5.6. */
+  var BRAND_ICONS = {
+    'i-whatsapp': 'whatsapp',
+    'i-instagram': 'instagram',
+    'i-facebook': 'facebook'
+  };
+
   function icon(id) {
-    return '<svg class="icon" aria-hidden="true"><use href="#' + id + '"></use></svg>';
+    var brand = BRAND_ICONS[id];
+    var cls = brand ? 'icon icon--brand icon--' + brand : 'icon';
+    return '<svg class="' + cls + '" aria-hidden="true"><use href="#' + id + '"></use></svg>';
   }
 
   function contactItem(iconId, label, valueHtml) {
@@ -115,12 +126,12 @@
       if (s.instagram) {
         icons += '<a href="' + esc(s.instagram) + '" target="_blank" rel="noopener"' +
           ' aria-label="' + esc(SITE.business.name) + ' on Instagram">' +
-          '<svg class="icon" aria-hidden="true"><use href="#i-instagram"></use></svg></a>';
+          icon('i-instagram') + '</a>';
       }
       if (s.facebook) {
         icons += '<a href="' + esc(s.facebook) + '" target="_blank" rel="noopener"' +
           ' aria-label="' + esc(SITE.business.name) + ' on Facebook">' +
-          '<svg class="icon" aria-hidden="true"><use href="#i-facebook"></use></svg></a>';
+          icon('i-facebook') + '</a>';
       }
       socialRow.innerHTML = icons;
       socialRow.hidden = icons === "";

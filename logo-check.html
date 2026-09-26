@@ -80,14 +80,26 @@
     </div>
   </div>
 
-  <h2>4. Favicon</h2>
+  <h2>4. Favicon &mdash; built from your own artwork</h2>
   <div class="card">
-    <div class="row">
-      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon.svg" width="16" height="16" alt=""></span><span>16 &middot; real tab size</span></div>
-      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon.svg" width="32" height="32" alt=""></span><span>32</span></div>
-      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon.svg" width="64" height="64" alt=""></span><span>64</span></div>
+    <p style="margin-bottom:1.25rem">Source: <code>images/Sivam_Enterprise_Logo_Transparent.svg</code>. That file is a 1.85&nbsp;MB SVG wrapper around a 941&times;1672 base64 PNG &mdash; it has <strong>zero <code>&lt;path&gt;</code> elements</strong>, so there is no vector to extract, and a favicon pointing straight at it makes every tab fetch 1.85&nbsp;MB. The script unpacks the PNG and emits real sizes instead.</p>
+    <p class="warn" style="margin-bottom:1.25rem"><strong>Please check the crop.</strong> The emblem and the wordmark in this artwork form one continuous mass &mdash; there is no empty seam to detect, so where to cut is a judgement call. Both candidates are below at true tab size. If the first one clips the mark, say so and I will move <code>SPLIT</code> in <code>scripts/build-favicon.py</code>.</p>
+
+    <div class="row" style="margin-bottom:1.5rem">
+      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon.svg" width="16" height="16" alt=""></span><span>emblem &middot; 16</span></div>
+      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon.svg" width="32" height="32" alt=""></span><span>emblem &middot; 32</span></div>
+      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon.svg" width="64" height="64" alt=""></span><span>emblem &middot; 64</span></div>
+      <div class="cell" style="text-align:center"><img src="images/favicon.svg" width="180" height="180" alt=""><span><strong>emblem</strong> &middot; 180<br>currently live</span></div>
     </div>
-    <p class="ok" style="margin-top:1.25rem">A drawn &ldquo;S&rdquo;, on-palette, 930 bytes. <strong>Not</strong> your logo: <code>Sivam_Enterprise_Logo_Transparent.svg</code> looks like a vector but is a 1.85&nbsp;MB raster in an <code>&lt;svg&gt;</code> wrapper, and as a favicon it made every tab fetch ~1.9&nbsp;MB. That, plus a 1.33&nbsp;MB PNG in the navbar, was the lag.</p>
+
+    <div class="row">
+      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon-lockup.svg" width="16" height="16" alt=""></span><span>lockup &middot; 16</span></div>
+      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon-lockup.svg" width="32" height="32" alt=""></span><span>lockup &middot; 32</span></div>
+      <div class="cell"><span style="background:#fff;border:1px solid var(--lav-700);border-radius:6px;padding:5px;display:inline-block"><img src="images/favicon-lockup.svg" width="64" height="64" alt=""></span><span>lockup &middot; 64</span></div>
+      <div class="cell" style="text-align:center"><img src="images/favicon-lockup.svg" width="180" height="180" alt=""><span><strong>full lockup</strong> &middot; 180<br>alternative</span></div>
+    </div>
+
+    <p class="ok" style="margin-top:1.25rem">The artwork is <strong>greyscale</strong>, not navy-and-gold &mdash; the ink is essentially <code>#000000</code> with grey antialiasing, and there is a near-empty 133&nbsp;px band at the bottom. That is why it reads well as a favicon. Emblem set is 60&nbsp;KB total against 1.85&nbsp;MB.</p>
   </div>
 
   <h2>5. Footer &mdash; text wordmark kept deliberately</h2>
@@ -105,7 +117,11 @@
         <tr><td><code>logo.png</code></td><td>39x48</td><td>4,811</td><td>1x fallback</td></tr>
         <tr><td><code>logo-2x.webp</code> / <code>.png</code></td><td>78x96</td><td>5,456 / 14,584</td><td>2x</td></tr>
         <tr><td><code>logo-3x.webp</code> / <code>.png</code></td><td>117x144</td><td>9,500 / 27,280</td><td>3x</td></tr>
-        <tr><td><code>favicon.svg</code></td><td>32x32 vector</td><td>930</td><td>tab icon</td></tr>
+        <tr><td><code>favicon.svg</code></td><td>64x64 raster in svg</td><td>11,074</td><td>tab icon, primary</td></tr>
+        <tr><td><code>favicon-32.png</code></td><td>32x32</td><td>2,872</td><td>tab icon</td></tr>
+        <tr><td><code>favicon-16.png</code></td><td>16x16</td><td>943</td><td>tab icon, small</td></tr>
+        <tr><td><code>favicon-180.png</code></td><td>180x180</td><td>40,542</td><td>apple-touch-icon</td></tr>
+        <tr><td><code>favicon-lockup.*</code></td><td>16&ndash;180</td><td>791&ndash;31,579</td><td>alternative crop, unused</td></tr>
       </tbody>
     </table>
     <p class="ok" style="margin-top:1.25rem">A visitor downloads <strong>one</strong> derivative: 2&ndash;27&nbsp;KB, against a 1.33&nbsp;MB source &mdash; a <strong>99.9%</strong> reduction. The source files are never served.</p>
