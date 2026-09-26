@@ -39,9 +39,8 @@ const SITE = {
     email: "",                                          // <-- REPLACE
 
     address: [
-      "1075-1076, Diamond Eco-3",                       // <-- REPLACE
-      "Gabeni Gam, Sachin",                             // <-- REPLACE
-      "Surat, Gujarat, India",                          // <-- REPLACE
+      "1075-1076, Diamond Eco-3, Gabeni Gam, Sachin",
+      "Surat, Gujarat, India",
     ],
 
     // Second contact person, shown in the Location and Contact panels.
