@@ -87,24 +87,17 @@ const SITE = {
 
   form: {
     /* ------------------------------------------------------------------
-       HOW ENQUIRIES ARE DELIVERED
+       HOW ENQUIRIES ARE DELIVERED — Web3Forms
        ------------------------------------------------------------------
-       Leave `endpoint` as "" and the form opens WhatsApp with the enquiry
-       pre-filled — this works immediately with no setup at all.
+       Enquiries are POSTed to Web3Forms (https://web3forms.com) which
+       forwards them to your email inbox for free.
 
-       To also receive enquiries by email:
-         1. Go to https://formspree.io and create a free account.
-         2. Create a new form, point it at your business email.
-         3. Copy the endpoint it gives you, which looks like:
-              https://formspree.io/f/abcdwxyz
-         4. Paste it below and set mode to "email".
-         5. Confirm the activation email Formspree sends you, once.
-
-       mode: "whatsapp" -> always open WhatsApp
-             "email"    -> POST to Formspree, fall back to WhatsApp if it fails
+       web3formsKey: your unique access key from web3forms.com.
+       Keep mode: "web3forms" to enable email delivery.
+       Set mode: "whatsapp" to bypass email and always use WhatsApp.
        ------------------------------------------------------------------ */
-    endpoint: "",                                   // <-- REPLACE
-    mode: "whatsapp",                               // <-- REPLACE
+    web3formsKey: "16ef79d9-51e8-4cda-bfa5-7f9b1c0fd8a6",   // <-- your key
+    mode: "web3forms",
   },
 };
 

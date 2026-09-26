@@ -429,6 +429,7 @@
     "f-name": function (v) { return v.trim().length >= 2; },
     "f-phone": function (v) { return digits(v) >= 7 && digits(v) <= 15; },
     "f-email": function (v) { return EMAIL_RE.test(v.trim()); },
+    "f-category": function (v) { return !!(v && v.trim()); },
     "f-message": function (v) { return v.trim().length >= 5; },
   };
 
@@ -455,6 +456,9 @@
       input.addEventListener("blur", function () {
         if (input.value !== "") validateField(input);
       });
+      input.addEventListener("change", function () {
+        if (input.closest(".field").classList.contains("is-invalid")) validateField(input);
+      });
       input.addEventListener("input", function () {
         if (input.closest(".field").classList.contains("is-invalid")) validateField(input);
       });
@@ -462,7 +466,7 @@
   }
 
   /* ======================================================================
-     FORM SUBMIT — Formspree first, WhatsApp always as the safety net
+     FORM SUBMIT — Web3Forms first, WhatsApp always as the safety net
      ====================================================================== */
   function status(msg) {
     var box = $("#form-status");
@@ -477,12 +481,13 @@
     var lines = [
       "*New enquiry — Shivam Enterprise website*",
       "",
-      "Name: " + data.name,
-      "Phone: " + data.phone,
-      "Email: " + data.email,
+      "Name: " + (data.name || ""),
+      "Phone: " + (data.phone || ""),
+      "Email: " + (data.email || ""),
+      "Category: " + (data.category || "Not specified"),
       "",
       "Message:",
-      data.message,
+      (data.message || ""),
     ];
     return lines.join("\n");
   }
@@ -502,8 +507,11 @@
     // so js/data.js values can be changed without a reload.
     function delivery() {
       var f = (SITE && SITE.form) || {};
-      var endpoint = f.endpoint || "";
-      return { endpoint: endpoint, useEmail: !!endpoint && f.mode === "email" };
+      var key = f.web3formsKey || "";
+      return {
+        key: key,
+        useWeb3Forms: !!key && f.mode !== "whatsapp"
+      };
     }
 
     form.addEventListener("submit", function (e) {
@@ -524,33 +532,47 @@
 
       var cfg = delivery();
 
-      // With no endpoint configured, WhatsApp is the delivery route.
-      if (!cfg.useEmail) {
+      // With no key or mode set to whatsapp, WhatsApp is the direct delivery route.
+      if (!cfg.useWeb3Forms) {
         status("Opening WhatsApp with your enquiry…");
         sendViaWhatsApp(form);
         return;
       }
 
-      // Email route.
+      // Populate access key
+      var keyInput = $("#w3f-access-key");
+      if (keyInput) keyInput.value = cfg.key;
+
+      // Web3Forms email route
       var original = submitText.textContent;
       submit.disabled = true;
       submit.setAttribute("aria-disabled", "true");
       submitText.textContent = "Sending…";
 
-      fetch(cfg.endpoint, {
+      var payload = toObject(new FormData(form));
+      payload.access_key = cfg.key;
+
+      fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { Accept: "application/json", "Content-Type": "application/json" },
-        body: JSON.stringify(toObject(new FormData(form))),
+        body: JSON.stringify(payload),
       })
         .then(function (res) {
-          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.json().then(function (data) {
+            if (!res.ok || !data.success) {
+              throw new Error(data.message || ("HTTP " + res.status));
+            }
+            return data;
+          });
+        })
+        .then(function () {
           form.reset();
           $$(".field", form).forEach(function (f) { f.classList.remove("is-invalid"); });
           status("Thank you — your enquiry has reached us. We reply within one working day.");
         })
-        .catch(function () {
+        .catch(function (err) {
           // Never lose the enquiry: hand it to WhatsApp instead.
-          status("We could not reach our inbox just now — opening WhatsApp with your enquiry instead.");
+          status("We could not deliver your email directly — opening WhatsApp with your enquiry ready instead.");
           sendViaWhatsApp(form);
         })
         .then(function () {

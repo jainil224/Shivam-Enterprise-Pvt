@@ -473,13 +473,18 @@
         </noscript>
       </div>
 
-      <!-- ENQUIRY FORM
-           Submission order:
-             1. If SITE.form.endpoint is filled in -> POST to Formspree.
-             2. If that request fails, or no endpoint is set -> open WhatsApp
-                with the enquiry pre-filled. The visitor never loses their text.
-           Nothing here needs editing for that to work. -->
+      <!-- ENQUIRY FORM — powered by Web3Forms (https://web3forms.com)
+           Access key is set in js/data.js → SITE.form.web3formsKey
+           Fallback: if submission fails, WhatsApp opens with the enquiry. -->
       <form class="form" id="enquiry-form" novalidate>
+
+        <!-- Web3Forms required fields -->
+        <input type="hidden" name="access_key" id="w3f-access-key" value="">
+        <input type="hidden" name="subject" value="New Enquiry — Shivam Enterprise">
+        <input type="hidden" name="from_name" value="Shivam Enterprise Website">
+        <!-- Honeypot spam trap -->
+        <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" aria-hidden="true">
+
         <div class="form__status" id="form-status" role="status" aria-live="polite">
           <svg class="icon" aria-hidden="true"><use href="#i-check-circle"></use></svg>
           <span id="form-status-text"></span>
@@ -526,12 +531,35 @@
           </p>
         </div>
 
+        <!-- Yarn Category dropdown -->
+        <div class="field">
+          <label class="field__label" for="f-category">
+            Yarn Category <span class="field__hint" aria-hidden="true">*</span>
+          </label>
+          <select class="field__control field__select" id="f-category" name="category" required
+                  aria-describedby="e-category">
+            <option value="" disabled selected>Select a category…</option>
+            <option value="TPM Yarn">TPM Yarn</option>
+            <option value="Polyester Yarn">Polyester Yarn</option>
+            <option value="Cotton Yarn">Cotton Yarn</option>
+            <option value="Blended Yarn">Blended Yarn (Cotton-Polyester)</option>
+            <option value="Melange Yarn">Melange / Slub Yarn</option>
+            <option value="Fancy Yarn">Fancy / Textured Yarn</option>
+            <option value="Yarn Mixture">Yarn Mixture (Custom Blend)</option>
+            <option value="Other">Other / Not Sure</option>
+          </select>
+          <p class="field__error" id="e-category">
+            <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+            <span>Please select a yarn category.</span>
+          </p>
+        </div>
+
         <div class="field">
           <label class="field__label" for="f-message">
             Message <span class="field__hint" aria-hidden="true">*</span>
           </label>
           <textarea class="field__control" id="f-message" name="message" required
-                    placeholder="What yarn type, count and quantity are you looking for?"
+                    placeholder="Tell us the count, quantity and shade you need…"
                     aria-describedby="e-message"></textarea>
           <p class="field__error" id="e-message">
             <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
@@ -540,13 +568,13 @@
         </div>
 
         <button class="btn btn--primary btn--block" type="submit" id="form-submit">
-          <span id="form-submit-text">Send Message</span>
+          <span id="form-submit-text">Send Enquiry</span>
           <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
         </button>
 
         <p class="form__note">
           Fields marked <span class="field__hint" aria-hidden="true">*</span> are required.
-          If the form cannot reach us, sending it opens WhatsApp with your message ready.
+          Enquiries are delivered by email via Web3Forms. If that fails, WhatsApp opens as a backup.
         </p>
       </form>
 
