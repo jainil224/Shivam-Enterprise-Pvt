@@ -1123,7 +1123,115 @@ select.field__control {
 }
 
 /* --------------------------------------------------------------------------
-   16. MOTION / PRINT PREFERENCES
+   16. SCROLL REVEAL & INTERACTION ANIMATIONS
+   -------------------------------------------------------------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Subtle scale entry for cards and panels */
+.card.reveal,
+.about-card.reveal,
+.service.reveal,
+.location__panel.reveal,
+.map.reveal,
+.form.reveal {
+  transform: translateY(32px) scale(0.98);
+}
+
+.card.reveal.is-in,
+.about-card.reveal.is-in,
+.service.reveal.is-in,
+.location__panel.reveal.is-in,
+.map.reveal.is-in,
+.form.reveal.is-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Scroll reading progress bar at top of window */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3.5px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--indigo) 0%, var(--indigo-300) 50%, var(--lav-400) 100%);
+  z-index: 9999;
+  transition: width 0.08s ease-out;
+  pointer-events: none;
+}
+
+/* Floating Back-to-Top Button */
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.15rem;
+  height: 3.15rem;
+  border-radius: 50%;
+  background-color: var(--indigo);
+  color: var(--platinum);
+  border: 1px solid var(--indigo-700);
+  box-shadow: 0 6px 20px rgba(43, 45, 66, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 900;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px) scale(0.9);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color var(--transition);
+}
+
+.back-to-top:hover {
+  background-color: var(--indigo-300);
+  transform: translateY(-3px) scale(1.08);
+  box-shadow: 0 8px 26px rgba(43, 45, 66, 0.38);
+}
+
+.back-to-top:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 3px;
+}
+
+.back-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.back-to-top .icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke: currentColor;
+  stroke-width: 2.2;
+}
+
+@media (max-width: 600px) {
+  .back-to-top {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   17. MOTION / PRINT PREFERENCES
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

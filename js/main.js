@@ -652,51 +652,90 @@
      REVEAL ON SCROLL
      ====================================================================== */
   function initReveal() {
-    var targets = $$(".card, .service");
+    var selectors = [
+      ".section-head",
+      ".about__head",
+      ".about-card",
+      ".about__highlights",
+      ".card",
+      ".service",
+      ".location__panel",
+      ".map",
+      ".contact-item",
+      ".form"
+    ];
+    var targets = $$(selectors.join(", "));
     if (!targets.length) return;
 
-    /* Reduced motion: show everything at once. The old code simply `return`ed,
-       which left every element permanently invisible — the content was
-       genuinely gone for those users. */
     if (reducedMotion || !("IntersectionObserver" in window)) {
       targets.forEach(function (el) { el.classList.add("is-in"); });
       return;
     }
 
     var fold = window.innerHeight;
-    var below = [];
-    var index = 0;
-    for (var i = 0; i < targets.length; i++) {
-      // Anything already on screen at load must never be hidden: if the
-      // observer misfires, the content is unreachable.
-      if (targets[i].getBoundingClientRect().top > fold) below.push(targets[i]);
-    }
 
-    // Stagger within each group of four, then write in a second pass so the
-    // reads above are never interleaved with style writes.
-    for (var j = 0; j < below.length; j++) {
-      below[j].classList.add("reveal");
-      below[j].style.transitionDelay = (index++ % 4) * 60 + "ms";
-    }
+    targets.forEach(function (el, index) {
+      var rect = el.getBoundingClientRect();
+      // Elements fully or mostly in the initial viewport start visible
+      if (rect.top < fold * 0.85 && rect.bottom > 0) {
+        el.classList.add("is-in");
+      } else {
+        el.classList.add("reveal");
+        // Stagger cards and sibling items nicely
+        var siblings = el.parentElement ? el.parentElement.children : [];
+        var siblingIndex = Array.prototype.indexOf.call(siblings, el);
+        var delay = siblingIndex >= 0 ? (siblingIndex % 4) * 85 : (index % 4) * 70;
+        if (delay > 0) {
+          el.style.transitionDelay = delay + "ms";
+        }
+      }
+    });
 
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (!en.isIntersecting) return;
         en.target.classList.add("is-in");
-        en.target.style.transitionDelay = "";   // stop delaying later hovers
+        en.target.style.transitionDelay = "";
         io.unobserve(en.target);
       });
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+    }, { rootMargin: "0px 0px -6% 0px", threshold: 0.05 });
 
-    below.forEach(function (el) { io.observe(el); });
+    $$(".reveal").forEach(function (el) { io.observe(el); });
 
-    /* If the viewport grows (rotation, desktop resize) an element that was
-       below the fold at load may now be on screen while still at opacity 0.
-       Promote anything now visible rather than leaving a blank block. */
     onScrollFrame(function () {
       if (window.innerHeight <= fold) return;
       fold = window.innerHeight;
     });
+  }
+
+  /* ======================================================================
+     SCROLL ENHANCEMENTS — Progress indicator & Back-to-top button
+     ====================================================================== */
+  function initScrollEnhancements() {
+    var bar = $("#scroll-progress");
+    var topBtn = $("#back-to-top");
+
+    onScrollFrame(function () {
+      var scrollY = window.scrollY;
+      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+
+      // Update top reading progress bar
+      if (bar && docHeight > 0) {
+        var pct = Math.min(100, Math.max(0, (scrollY / docHeight) * 100));
+        bar.style.width = pct + "%";
+      }
+
+      // Toggle floating back-to-top button
+      if (topBtn) {
+        topBtn.classList.toggle("is-visible", scrollY > 400);
+      }
+    });
+
+    if (topBtn) {
+      topBtn.addEventListener("click", function () {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    }
   }
 
   /* ======================================================================
@@ -743,6 +782,7 @@
     initValidation();
     initSubmit();
     initReveal();
+    initScrollEnhancements();
     initTicker();
   }
 
