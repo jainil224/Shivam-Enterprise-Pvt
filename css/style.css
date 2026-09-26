@@ -1,0 +1,1087 @@
+/* ==========================================================================
+   Shivam Enterprise — stylesheet
+   Design system: design.md (Platinum 60% / Lavender Grey 30% / Space Indigo 10%)
+   Build order: tokens -> reset -> typography -> layout -> components -> responsive
+
+   COLOUR CONTRACT
+   Only the 12 hex values below may appear anywhere in this project.
+   Anything else is a violation of design.md section 2.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. TOKENS
+   -------------------------------------------------------------------------- */
+:root {
+  /* Core three */
+  --platinum: #edf2f4;      /* 60% - dominant background */
+  --lavender: #8d99ae;      /* 30% - secondary surfaces, borders, muted icons */
+  --indigo: #2b2d42;        /* 10% - accent, buttons, headings, footer */
+
+  /* Sanctioned shades (design.md 2.3) - interactive states only */
+  --indigo-300: #191b27;    /* accent hover */
+  --indigo-200: #11121a;    /* accent pressed */
+  --indigo-700: #6d71a0;    /* accent tint chips */
+  --lav-400: #697994;       /* secondary hover / text-safe secondary / input borders */
+  --lav-700: #bbc2cf;       /* decorative hairline dividers */
+  --lav-900: #e8ebef;       /* disabled button fill */
+  --plat-600: #f0f4f6;      /* card background */
+  --plat-700: #f4f7f8;      /* alternate section background */
+  --plat-400: #b1c6cf;      /* hairline on light background */
+
+  /* Text roles (design.md 2.4) - contrast vs Platinum noted */
+  --text-heading: var(--indigo);        /* 11.95:1 on Platinum - AA */
+  --text-body: #4a4d72;                  /*  7.17:1 on Platinum - AA  */
+  --text-muted: var(--lav-400);         /*  3.91:1 on Platinum - large/bold + decorative only */
+  --text-on-dark: var(--platinum);      /*  9.21:1 on Indigo - AA */
+  --text-on-lav: var(--indigo);         /*  4.69:1 on Lavender - AA */
+  --text-on-lav-strong: var(--indigo-200); /* 6.49:1 on Lavender - AA */
+
+  /* Typography */
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  /* Display face: the hero headline only. Instrument Serif ships regular only,
+     so it must never be given a bold weight or the browser fakes one. */
+  --font-display: "Instrument Serif", Georgia, "Times New Roman", Times, serif;
+  --font-source-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --fs-h1: 2.5rem;
+  --fs-h2: 1.875rem;
+  --fs-h3: 1.25rem;
+  --fs-body: 1rem;
+  --fs-small: 0.875rem;
+  --fs-xs: 0.75rem;
+
+  /* Layout */
+  --container: 1200px;
+  --section-y: clamp(2.5rem, 6vw, 6rem);
+  --gap: 1.5rem;
+  --pad-card: 1.5rem;
+  --pad-inline: clamp(1rem, 4vw, 2rem);
+  --nav-h: 4.5rem;
+
+  /* Shape */
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 2px rgba(17, 18, 26, 0.05);
+  --shadow-nav: 0 1px 3px rgba(17, 18, 26, 0.08);
+
+  --transition: 180ms ease;
+}
+
+/* --------------------------------------------------------------------------
+   2. RESET
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+/* The `hidden` attribute is semantic and must win over any `display` a
+   component sets, otherwise hiding an element with JS silently fails. */
+[hidden] { display: none !important; }
+
+html {
+  scroll-behavior: smooth;
+  /* Anchor offset lives HERE and nowhere else. It used to be set twice - once
+     as scroll-padding-top on <html> and again as scroll-margin-top on every
+     [id] - and the two ADDED together, dropping every anchor target 192px down
+     the page under a 73px header. Keep exactly one mechanism. */
+  scroll-padding-top: calc(var(--nav-h) + 0.75rem);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--platinum);
+  color: var(--text-body);
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.is-locked { overflow: hidden; }
+
+h1, h2, h3, h4, p, figure, blockquote { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+img, svg { display: block; max-width: 100%; }
+img { height: auto; }
+
+a {
+  color: var(--indigo);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition);
+}
+a:hover { color: var(--indigo-300); }
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translate(-50%, -140%);
+  z-index: 200;
+  padding: 0.75rem 1.25rem;
+  background: var(--indigo);
+  color: var(--text-on-dark);
+  text-decoration: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  transition: transform var(--transition);
+}
+.skip-link:focus { transform: translate(-50%, 0); color: var(--text-on-dark); }
+
+/* --------------------------------------------------------------------------
+   3. LAYOUT PRIMITIVES
+   -------------------------------------------------------------------------- */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--pad-inline);
+}
+
+.section { padding-block: var(--section-y); }
+
+/* Lavender Grey section background - the 30% surface from design.md 2.2.
+   Section-level text sitting directly on Lavender must shift to Space
+   Indigo 300: #4a4d72 body text is only 2.81:1 here, Indigo 300 is 5.95:1.
+   Text inside .card / .service is unaffected - those keep a Platinum
+   surface, so it stays on the accessible body colour. */
+.section--lav {
+  background-color: var(--lavender);
+}
+.section--lav .eyebrow { color: var(--indigo-300); }
+.section--lav .lead { color: var(--indigo-300); }
+.section--lav h2 { color: var(--text-on-lav); }
+
+.section-head {
+  max-width: 44rem;
+  margin-inline: auto;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+  text-align: center;
+}
+.section-head--left { margin-inline: 0; text-align: left; }
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lav-400);
+}
+
+h1, h2, h3, h4 { color: var(--text-heading); line-height: 1.2; }
+h1 { font-size: clamp(2rem, 5vw, var(--fs-h1)); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.5rem, 3.5vw, var(--fs-h2)); font-weight: 600; letter-spacing: -0.01em; }
+h3 { font-size: var(--fs-h3); font-weight: 600; }
+.lead { font-size: 1.0625rem; color: var(--text-body); }
+
+/* --------------------------------------------------------------------------
+   4. BUTTONS  (design.md 5.2)
+   -------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--transition),
+              border-color var(--transition),
+              color var(--transition);
+}
+
+.btn--primary {
+  background-color: var(--indigo);
+  color: var(--text-on-dark);
+}
+.btn--primary:hover { background-color: var(--indigo-300); color: var(--text-on-dark); }
+.btn--primary:active { background-color: var(--indigo-200); }
+
+.btn--secondary {
+  background-color: transparent;
+  border-color: var(--indigo);
+  color: var(--indigo);
+}
+.btn--secondary:hover { background-color: var(--lav-900); color: var(--indigo); }
+
+.btn--small { padding: 0.5rem 1rem; font-size: var(--fs-small); }
+.btn--block { width: 100%; }
+
+.btn[disabled],
+.btn[aria-disabled="true"] {
+  background-color: var(--lav-900);
+  border-color: transparent;
+  color: var(--lavender);
+  cursor: not-allowed;
+}
+
+.btn .icon { flex: none; }
+
+/* --------------------------------------------------------------------------
+   5. ICONS
+   -------------------------------------------------------------------------- */
+.icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+.icon--lg { width: 2rem; height: 2rem; }
+.icon--muted { color: var(--lav-400); }
+.icon--accent { color: var(--indigo); }
+
+/* --------------------------------------------------------------------------
+   6. NAVBAR  (design.md 5.1)
+   -------------------------------------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--platinum);
+  border-bottom: 1px solid var(--lav-700);
+  transition: box-shadow var(--transition);
+}
+.site-header.is-stuck { box-shadow: var(--shadow-nav); }
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: var(--nav-h);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--indigo);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.brand:hover { color: var(--indigo); }
+.brand__mark { color: var(--lav-400); font-weight: 600; }
+
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2.2vw, 2rem);
+}
+
+.nav__link {
+  position: relative;
+  padding: 0.35rem 0;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--lav-400);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -0.15rem;
+  height: 2px;
+  background-color: var(--indigo);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition);
+}
+.nav__link:hover { color: var(--indigo); }
+.nav__link.is-active { color: var(--indigo); }
+.nav__link.is-active::after { transform: scaleX(1); }
+
+.nav__actions { display: flex; align-items: center; gap: 0.75rem; }
+
+.nav__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--lav-700);
+  border-radius: var(--radius);
+  color: var(--indigo);
+  cursor: pointer;
+}
+.nav__toggle .icon--close { display: none; }
+.nav__toggle[aria-expanded="true"] .icon--menu { display: none; }
+.nav__toggle[aria-expanded="true"] .icon--close { display: block; }
+
+/* --------------------------------------------------------------------------
+   7. HERO
+   -------------------------------------------------------------------------- */
+.hero { padding-block: clamp(2.5rem, 6vw, 5rem) var(--section-y); }
+
+.hero__grid {
+  display: grid;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+}
+
+/* Hero display faces. Both are used ONLY inside .hero__title, where the words
+   alternate between them - see the scoped rules further down. Instrument Serif
+   ships regular only, so it is used at weight 400 in italic and never bolder. */
+.font-serif-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+}
+.font-source-serif {
+  font-family: var(--font-source-serif);
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* Hero title typography styles */
+.hero__title {
+  font-size: clamp(2.25rem, 5.8vw, 3.25rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  max-width: 32ch;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+}
+
+.hero__title-line {
+  display: block;
+}
+
+.hero__title .font-source-serif {
+  font-family: var(--font-source-serif);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.hero__title .font-serif-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.hero__text {
+  max-width: 40rem;
+  margin: 0 auto 2rem;
+  font-size: 1.0625rem;
+  text-align: center;
+  text-wrap: pretty;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.hero__points {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.5rem;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-body);
+}
+.hero__points li { display: flex; align-items: center; gap: 0.4rem; }
+.hero__points .icon { color: var(--indigo); }
+
+/* --------------------------------------------------------------------------
+   8. TICKER / MARQUEE BAND  (infinite loop animation)
+   -------------------------------------------------------------------------- */
+.ticker {
+  background-color: var(--plat-600);
+  border-top: 1px solid var(--lav-700);
+  border-bottom: 1px solid var(--lav-700);
+  padding-block: 1.125rem;
+  overflow: hidden;
+  user-select: none;
+}
+
+.ticker__track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 28s linear infinite;
+}
+
+.ticker:hover .ticker__track {
+  animation-play-state: paused;
+}
+
+.ticker__content {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  padding-right: 2.5rem;
+  white-space: nowrap;
+}
+
+.ticker__item {
+  font-size: clamp(0.875rem, 1.8vw, 1.0625rem);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--indigo);
+}
+
+.ticker__dot {
+  color: var(--indigo-700);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker__track {
+    animation: none;
+  }
+  .ticker {
+    overflow-x: auto;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   9. ABOUT (image-free feature grid layout)
+   -------------------------------------------------------------------------- */
+.about__head {
+  text-align: center;
+  max-width: 48rem;
+  margin: 0 auto 3rem;
+}
+
+.about__intro {
+  margin-top: 1.25rem;
+  font-size: 1.0625rem;
+  color: var(--text-body);
+  line-height: 1.65;
+}
+
+.about__features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.about-card {
+  background-color: var(--plat-600);
+  border: 1px solid var(--lav-700);
+  border-radius: var(--radius);
+  padding: 2rem 1.75rem;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.about-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--indigo-700);
+  box-shadow: 0 8px 24px rgba(43, 45, 66, 0.06);
+}
+
+.about-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  background-color: var(--platinum);
+  border: 1px solid var(--lav-700);
+  border-radius: var(--radius);
+  color: var(--indigo);
+  margin-bottom: 1.25rem;
+}
+
+.about-card__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 0.6rem;
+}
+
+.about-card__desc {
+  font-size: 0.9375rem;
+  color: var(--text-body);
+  line-height: 1.6;
+}
+
+.about__highlights {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem 1.5rem;
+}
+
+.about__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background-color: var(--plat-700);
+  border: 1px solid var(--lav-700);
+  border-radius: 2rem;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.about__pill .icon {
+  color: var(--indigo);
+}
+
+/* --------------------------------------------------------------------------
+   10. CARDS (category + product + feature)  (design.md 5.3)
+   -------------------------------------------------------------------------- */
+.grid { display: grid; gap: var(--gap); }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--plat-600);
+  border: 1px solid var(--lav-700);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color var(--transition), transform var(--transition);
+}
+.card:hover { border-color: var(--lav-400); }
+
+.card__media {
+  position: relative;
+  background-color: var(--platinum);
+  border-bottom: 1px solid var(--lav-700);
+  aspect-ratio: 1 / 1;
+}
+.card__media img { width: 100%; height: 100%; object-fit: cover; }
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.6rem;
+  padding: var(--pad-card);
+}
+.card__title { font-size: 1.125rem; font-weight: 600; }
+.card__desc { font-size: var(--fs-small); color: var(--text-body); }
+
+/* Tag pill - Lavender Grey fill, Indigo text */
+.tag {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  background-color: var(--lavender);
+  color: var(--indigo);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.card__spec {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-body);
+}
+
+/* Informational card (What We Sell) - no footer, no button, no price.
+   The tag sits directly under the description. */
+.card--info .card__body { gap: 0.7rem; }
+.card--info .tag { align-self: flex-start; margin-top: 0.15rem; }
+
+/* Service card */
+.service {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: var(--pad-card);
+  background-color: var(--plat-600);
+  border: 1px solid var(--lav-700);
+  border-radius: var(--radius);
+  transition: border-color var(--transition);
+}
+.service:hover { border-color: var(--indigo); }
+.service__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem; height: 3rem;
+  border: 1px solid var(--lav-400);
+  border-radius: var(--radius);
+  color: var(--lav-400);
+  transition: color var(--transition), border-color var(--transition);
+}
+.service:hover .service__icon { color: var(--indigo); border-color: var(--indigo); }
+.service h3 { font-size: 1.0625rem; }
+.service p { font-size: var(--fs-small); color: var(--text-body); }
+
+/* --------------------------------------------------------------------------
+   11. LOCATION / AREAS WE SERVE
+   -------------------------------------------------------------------------- */
+.location__grid {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  align-items: start;
+}
+
+.location__panel {
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  background-color: var(--plat-600);
+  border: 1px solid var(--lav-700);
+  border-radius: var(--radius);
+}
+
+.map {
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background-color: var(--plat-700);
+  border: 1px solid var(--lav-700);
+  border-radius: var(--radius);
+}
+.map iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  /* Keeps the map from injecting off-palette UI colours. The map is content,
+     not chrome, so full colour is allowed - this is a light touch only. */
+  filter: saturate(0.25);
+}
+
+.areas__title {
+  margin-bottom: 0.85rem;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-body);
+}
+.areas__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.areas__list li {
+  padding: 0.35rem 0.85rem;
+  background-color: var(--platinum);
+  border: 1px solid var(--lav-400);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--indigo);
+}
+
+/* --------------------------------------------------------------------------
+   12. CONTACT + FORM  (design.md 5.4)
+   -------------------------------------------------------------------------- */
+.contact__grid {
+  display: grid;
+  gap: clamp(2rem, 5vw, 3.5rem);
+  align-items: start;
+}
+
+.contact-list {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+  padding: 1.25rem 1.35rem;
+  background-color: var(--plat-600);
+  border: 1px solid var(--lav-700);
+  border-radius: var(--radius);
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.contact-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--indigo-700);
+  box-shadow: 0 8px 24px rgba(43, 45, 66, 0.05);
+}
+
+.contact-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  background-color: var(--platinum);
+  border: 1px solid var(--lav-700);
+  border-radius: var(--radius);
+  color: var(--indigo);
+  transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.contact-item:hover .contact-item__icon {
+  background-color: var(--indigo);
+  color: var(--platinum);
+  border-color: var(--indigo);
+}
+
+.contact-item__body {
+  flex: 1;
+}
+
+.contact-item__label {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--indigo-700);
+}
+
+.contact-item__value {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--indigo);
+  text-decoration: none;
+}
+
+a.contact-item__value:hover {
+  color: var(--indigo-300);
+  text-decoration: underline;
+}
+
+.contact-item__value--plain {
+  color: var(--text-body);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.form {
+  padding: clamp(1.75rem, 3.5vw, 2.5rem);
+  background-color: var(--plat-600);
+  border: 1px solid var(--lav-700);
+  border-radius: calc(var(--radius) * 1.5);
+  box-shadow: 0 12px 36px rgba(43, 45, 66, 0.05);
+}
+
+.field {
+  margin-bottom: 1.35rem;
+}
+
+.field__label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.field__hint {
+  font-weight: 700;
+  color: var(--indigo);
+}
+
+.field__control {
+  display: block;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background-color: var(--platinum);
+  border: 1px solid var(--lav-700);
+  border-radius: var(--radius);
+  font-size: var(--fs-body);
+  color: var(--text-heading);
+  transition: border-color var(--transition), box-shadow var(--transition), background-color var(--transition);
+}
+
+.field__control::placeholder {
+  color: var(--lav-400);
+}
+
+.field__control:hover {
+  border-color: var(--indigo-700);
+}
+
+.field__control:focus {
+  outline: none;
+  background-color: #ffffff;
+  border-color: var(--indigo);
+  box-shadow: 0 0 0 4px rgba(43, 45, 66, 0.1);
+}
+
+.field__control:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 1px;
+}
+
+textarea.field__control {
+  min-height: 7.5rem;
+  resize: vertical;
+}
+
+.field__error {
+  display: none;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--indigo);
+}
+.field__error .icon { width: 1rem; height: 1rem; }
+.field.is-invalid .field__error { display: flex; }
+.field.is-invalid .field__control {
+  border-color: var(--indigo);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px var(--lav-900);
+}
+
+.form__row { display: grid; gap: 0 1rem; }
+
+.form__status {
+  display: none;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+  padding: 0.85rem 1rem;
+  background-color: var(--platinum);
+  border: 1px solid var(--indigo);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--indigo);
+}
+.form__status.is-visible { display: flex; }
+.form__status .icon { margin-top: 0.15rem; }
+
+.form__note {
+  margin-top: 1rem;
+  font-size: var(--fs-xs);
+  color: var(--text-body);
+}
+
+/* --------------------------------------------------------------------------
+   13. FOOTER  (design.md 5.5 - Space Indigo band per prompt.md 4.9)
+   -------------------------------------------------------------------------- */
+.site-footer {
+  background-color: var(--indigo);
+  color: var(--text-on-dark);
+  padding-block: clamp(2.5rem, 5vw, 3.5rem) 0;
+}
+.site-footer a { color: var(--platinum); }
+.site-footer a:hover { color: var(--indigo-700); }
+
+.footer__grid {
+  display: grid;
+  gap: 2.5rem;
+  padding-bottom: 2.5rem;
+}
+
+.footer__brand {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--platinum);
+  text-decoration: none;
+}
+.footer__tagline {
+  margin-top: 0.75rem;
+  max-width: 22rem;
+  font-size: var(--fs-small);
+  color: var(--lavender);
+}
+
+.footer__title {
+  margin-bottom: 1rem;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--platinum);
+}
+.footer__list { display: grid; gap: 0.6rem; font-size: var(--fs-small); }
+.footer__list a { text-decoration: none; }
+.footer__list a:hover { text-decoration: underline; }
+.footer__list span { color: var(--lavender); }
+
+.footer__social { display: flex; gap: 0.6rem; margin-top: 1rem; }
+.footer__social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem; height: 2.25rem;
+  border: 1px solid var(--lav-400);
+  border-radius: var(--radius);
+  color: var(--platinum);
+  transition: background-color var(--transition), color var(--transition);
+}
+.footer__social a:hover { background-color: var(--indigo-300); color: var(--platinum); }
+
+.footer__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-block: 1.25rem;
+  border-top: 1px solid var(--indigo-300);
+  font-size: var(--fs-xs);
+  color: var(--lavender);
+}
+
+/* --------------------------------------------------------------------------
+   14. REVEAL ON SCROLL
+   -------------------------------------------------------------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 500ms ease, transform 500ms ease;
+}
+.reveal.is-in { opacity: 1; transform: none; }
+/* --------------------------------------------------------------------------
+   15. RESPONSIVE  (mobile-first: base = phone, 768 = tablet, 1024 = desktop)
+   -------------------------------------------------------------------------- */
+@media (min-width: 480px) {
+  .stats__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 899px) {
+  .nav__toggle { display: inline-flex; }
+
+  .nav__menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.5rem var(--pad-inline) 1.25rem;
+    background-color: var(--platinum);
+    border-bottom: 1px solid var(--lav-700);
+    box-shadow: var(--shadow-nav);
+    /* Without this the menu can run past the bottom of a short or landscape
+       phone with no way to scroll to the lower links. The vh line is a
+       fallback for browsers without dvh; dvh also accounts for the mobile
+       URL bar, which vh does not. */
+    max-height: calc(100vh - var(--nav-h));
+    max-height: calc(100dvh - var(--nav-h));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .nav__menu.is-open { display: flex; }
+
+  .nav__link {
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--lav-700);
+    font-size: 1rem;
+  }
+  .nav__link::after { display: none; }
+  .nav__link.is-active { color: var(--indigo); }
+
+  .nav__actions { margin-top: 1rem; }
+  .nav__actions .btn { width: 100%; }
+
+  .footer__bar { justify-content: center; text-align: center; }
+
+  /* ---- Tap targets: 44px minimum on touch, mobile widths only -------------
+     Desktop keeps its tighter density; these are only for coarse pointers. */
+  .brand { min-height: 44px; }
+  a.contact-item__value { padding-block: 0.6rem; }
+  .areas__list li { min-height: 44px; display: inline-flex; align-items: center; }
+  .footer__brand { min-height: 44px; display: inline-flex; align-items: center; }
+  .footer__list a { min-height: 44px; display: inline-flex; align-items: center; }
+}
+
+@media (min-width: 900px) {
+  /* The hero stays a single centred column at every width. There is deliberately
+     no .hero__grid override here - that is what used to left-align it. */
+  .about__grid { grid-template-columns: 1.1fr 0.9fr; }
+  .contact__grid { grid-template-columns: 0.9fr 1.1fr; }
+  .location__grid { grid-template-columns: 0.85fr 1.15fr; }
+  .footer__grid { grid-template-columns: 1.4fr 1fr 1.3fr 0.8fr; }
+
+  /* Lay the links and the Contact Us button out on ONE row. Without this the
+     .nav__menu is a plain block, so the button drops onto a second line under
+     the links and sits left-aligned instead of at the right edge. The .nav
+     itself is already space-between, so the menu hugs the right edge. */
+  .nav__menu {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 560px) {
+  /* Name + phone side by side only once there is room for two real inputs.
+     At 480px they were cramped and the placeholder text truncated. */
+  .form__row { grid-template-columns: 1fr 1fr; }
+}
+
+@media (min-width: 768px) {
+  .grid--3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .grid--3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* --------------------------------------------------------------------------
+   16. MOTION / PRINT PREFERENCES
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
+
+@media print {
+  .site-header, .nav, .hero__actions, .map, .form, .footer__social { display: none; }
+  body { background: none; color: #000; }
+  .site-footer { background: none; color: #000; }
+}
